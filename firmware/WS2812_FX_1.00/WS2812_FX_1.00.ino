@@ -20,8 +20,14 @@
 
 #define TOPIC_MODE_SET "led/mode/set"   // Топик - отправка уведомления о переключении (смене) режима
 #define TOPIC_MODE_CMD "led/mode/cmd"   // Топик - получение команды управления
+#define TOPIC_MODE_NFO "led/mode/nfo"   // Топик - отправка уведомления о выполнении
+#define TOPIC_MODE_ERR "led/mode/err"   // Топик - отправка уведомления об ошибке команды
 
-#define public
+// Раскомментируйте следующую строцку, если вы задаете параметры подключения к WiFi и MQTT серверу
+// явным образом в блоке ниже. Если строка закомментирована - блок определения параметров подключения в
+// точно таком же формате вынесен в отдельный файл 'settings.h' и переменные при сборке скетча будут браться из него.
+
+// #define public
 #ifndef public 
 
 #include "settings.h"         // приватные данные и пароли доступа к серверу MQTT и WiFi сети
@@ -32,7 +38,7 @@ const char *ssid = "SSID";                  // Имя WiFi cети
 const char *pass = "PASS";                  // Пароль WiFi cети
 
 const char *mqtt_server = "servername";     // Имя сервера MQTT
-const int   mqtt_port = xxxxx;              // Порт для подключения к серверу MQTT
+const int   mqtt_port = 12345;              // Порт для подключения к серверу MQTT
 const char *mqtt_user = "username";         // Логин от сервера
 const char *mqtt_pass = "password";         // Пароль от сервера
 // ------------- WiFi & MQTT parameters --------------
@@ -42,7 +48,8 @@ const char *mqtt_pass = "password";         // Пароль от сервера
   Использование команд от MQTT
   Отправка со стороны MQTT:
   
-    BR:XXX         - установить новую яркость 1..255
+    BR:XXX         - установить новую яркость 0..255
+    BR             - получить текущее значение яркости 0..255
     
     GM:N           - отправить серверу параметры режима с номером N (формат - как для команды PM)   
     
@@ -87,8 +94,8 @@ const char *mqtt_pass = "password";         // Пароль от сервера
     topic: led/mode/set  value: PM:22:60:50:4:0:1:0     
 */
 
-int max_bright = 255;         // максимальная яркость (1 - 255)
-int ledMode = 3;              // начальный режим после включения
+int max_bright = 255;         // максимальная яркость (0 - 255)
+int ledMode = 1000;           // начальный режим после включения
 int newMode = 0;              // новый режим переданный с консоли или с MQTT сервера  
 
 WiFiClient wclient;
@@ -438,9 +445,9 @@ void  prepareModeChange(int newmode) {
   // Random Mode State is changed?
   if (oldRandomModeState != randomModeOn) {
     if (randomModeOn)
-      Serial.println("Auto change effects: on");
+      NotifyInfo("Auto change effects: on");
     else
-      Serial.println("Auto change effects: off");
+      NotifyInfo("Auto change effects: off");
   }
 }
 
@@ -476,7 +483,20 @@ void processCommand(String data) {
   // BR:XXX - установить новую яркость
   if (cmd == "BR") {
     String bright =  getValue(data, ':', 1);
+    
+    // Запрос текущего значения установленной яркости
+    if (cnt == 1) {      
+
+        client.publish(TOPIC_MODE_SET, "BR:" + String(max_bright));
+        Serial.println("Current brightness: " + String(max_bright)); 
+        
+        NotifyInfo("Processed -> [" + data + "]");
+        
+    } else 
+
+    // Установка значения максимальной яркости
     if (cnt == 2) {      
+    
       int br = bright.toInt();
       if (br < 1) br = 1;
       if (br > 255) br = 255;
@@ -490,9 +510,13 @@ void processCommand(String data) {
       if (ledMode > MAX_EFFECT) {
         change_mode(ledMode);
       }
-      Serial.println("Processed: " + data);
+
+      NotifyInfo("Processed -> [" + data + "]");
+      
     } else {
-      Serial.println("Wrong params: expected: BR:XXX; received: " + data);
+      
+      NotifyError("Wrong params: expected: BR:XXX; received: " + data);
+      
     }
     return;
   }
@@ -505,12 +529,12 @@ void processCommand(String data) {
       if (iMode >= 2 && iMode <= MAX_EFFECT) {    
         ModeParameter param = mode_params[iMode];
         NotifyModeChaned(iMode, param);
-        Serial.println("Processed: " + data);
+        NotifyInfo("Processed -> [" + data + "]");
       } else {
-        Serial.println("Unknown mode: " + String(iMode));
+        NotifyError("Unknown mode: " + String(iMode));
       }
     } else {
-      Serial.println("Wrong params: expected: GM:N; received: " + data);
+      NotifyError("Wrong params: expected: GM:N; received: " + data);
     }
     return;
   }  
@@ -550,12 +574,12 @@ void processCommand(String data) {
           ledMode = 0;
           prepareModeChange(iMode);
         }
-        Serial.println("Processed: " + data);
+        NotifyInfo("Processed -> [" + data + "]");
       } else {
-        Serial.println("Unknown mode: " + String(iMode));
+        NotifyError("Unknown mode: " + String(iMode));
       }
     } else {
-      Serial.println("Wrong params: expected: PM:N:T:D:S:P:U:A; received: " + data);
+      NotifyError("Wrong params: expected: PM:N:T:D:S:P:U:A; received: " + data);
     }
     return;
   }
@@ -564,9 +588,9 @@ void processCommand(String data) {
   if (cmd == "SV") {
     if (cnt == 1) {
       saveSettings();
-      Serial.println("Processed: " + data);
+      NotifyInfo("Processed -> [" + data + "]");
     } else {
-      Serial.println("Wrong params: expected: SV; received: " + data);
+      NotifyError("Wrong params: expected: SV; received: " + data);
     }
     return;
   }
@@ -586,12 +610,12 @@ void processCommand(String data) {
           rebuildFavorites();
         }
         NotifyModeChaned(iMode, param);        
-        Serial.println("Processed: " + data);
+        NotifyInfo("Processed -> [" + data + "]");
       } else {
-        Serial.println("Unknown mode: " + String(iMode));
+        NotifyError("Unknown mode: " + String(iMode));
       }
     } else {
-      Serial.println("Wrong params: expected: US:N:A; received: " + data);
+      NotifyError("Wrong params: expected: US:N:A; received: " + data);
     }
     return;
   }
@@ -601,9 +625,9 @@ void processCommand(String data) {
     if (cnt == 1) {
       ModeParameter param = mode_params[ledMode];
       NotifyModeChaned(ledMode, param);        
-      Serial.println("Processed: " + data);
+      NotifyInfo("Processed -> [" + data + "]");
     } else {
-      Serial.println("Wrong params: expected: AM; received: " + data);
+      NotifyError("Wrong params: expected: AM; received: " + data);
     }
     return;
   }
@@ -616,14 +640,26 @@ void processCommand(String data) {
       if (iMode > 0) {    
          prepareModeChange(iMode);
       }
-      Serial.println("Processed: " + data);
+      NotifyInfo("Processed: [" + data + "]");
     } else {
-      Serial.println("Wrong params: expected: DO:N; received: " + data);
+      NotifyError("Wrong params: expected: DO:N; received: " + data);
     }
     return;
   }
 
-  Serial.println("Unrecognized: " + data);
+  NotifyError("Unrecognized -> " + data);
+}
+
+void NotifyInfo(String message) {
+    String data = "NFO: " + message;
+    client.publish(TOPIC_MODE_NFO, data);
+    Serial.println(data); 
+}
+
+void NotifyError(String message) {
+    String data = "ERR: " + message;
+    client.publish(TOPIC_MODE_ERR, data);
+    Serial.println(data); 
 }
 
 void NotifyModeChaned(int mode, struct ModeParameter param) {
@@ -638,15 +674,16 @@ void NotifyModeChaned(int mode, struct ModeParameter param) {
     //    P - значение шага изменения параметра (для режимов, которые поддерживают - /3,17,39,40,41,42/)
     //    U - 0/1 - выкл/вкл - использовать данный режим при автоматической смене режимов
     //    A - 0/1 - 0: режим сейчас не активен; 1: это текущий проигрываемый режим
-    client.publish(TOPIC_MODE_SET, 
-                   "PM:" + 
-                   String(mode) + ":" + 
-                   String(param.duration) + ":" +
-                   String(param.delay) + ":" + 
-                   (param.segment > 0 ? String(param.segment) : "X") + ":" +
-                   (param.step > 0 ? String(param.step) : "X") + ":" +
-                   String(param.use) + ":" + 
-                   (mode == ledMode ? "1" : "0"));
+    String data = "PM:" +
+                  String(mode) + ":" + 
+                  String(param.duration) + ":" +
+                  String(param.delay) + ":" + 
+                  (param.segment > 0 ? String(param.segment) : "X") + ":" +
+                  (param.step > 0 ? String(param.step) : "X") + ":" +
+                  String(param.use) + ":" + 
+                  (mode == ledMode ? "1" : "0");
+    client.publish(TOPIC_MODE_SET, data);
+    Serial.println("Mode paramters: " + data); 
 }
 
 void loadSettings() {
