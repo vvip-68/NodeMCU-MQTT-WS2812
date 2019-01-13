@@ -97,6 +97,7 @@ void saveSettings() {
 void savePowerSettings() {
 
   // Поставить отметку, что EEPROM инициализировано параметрами эффектов
+  EEPROM.write(1, max_bright);
   EEPROM.write(6, randomModeOn ? 1 : 0);
   EEPROM.write(7, userColor.r);
   EEPROM.write(8, userColor.g);
