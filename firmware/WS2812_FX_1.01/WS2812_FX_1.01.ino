@@ -265,7 +265,8 @@ void loop() {
       if (client.connect(MQTT::Connect("LedStripClient").set_auth(mqtt_user, mqtt_pass))) {
         Serial.println("Connected to MQTT server");
         client.set_callback(callback);
-        client.subscribe(TOPIC_MODE_CMD); // подписываемся по топик (и суб-топики) для получения команд от сервера
+        client.subscribe(TOPIC_MODE_CMD);
+        NotifyOnConnect();    
       } else {
         Serial.println("Could not connect to MQTT server");
       }

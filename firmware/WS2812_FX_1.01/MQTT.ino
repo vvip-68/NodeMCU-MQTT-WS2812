@@ -21,6 +21,28 @@ void NotifyFavorites() {
   if (client.connected()) client.publish(TOPIC_MODE_ERR, "FAV:" + data);
 }
 
+void NotifyOnConnect() {  
+  if (client.connected()) {
+    // Текущее состояние питания
+    power = powerOn ? "ON" : "OFF";
+    Serial.println("Power: " + power); 
+    client.publish(MQTT::Publish(TOPIC_MODE_SET, "PWR:" + power).set_retain().set_qos(1));
+
+    // Текущая яркость
+    Serial.println("Current brightness: " + String(max_bright)); 
+    client.publish(MQTT::Publish(TOPIC_MODE_SET, "BR:" + String(max_bright)).set_retain().set_qos(1));
+
+    // Текущий режим
+    ModeParameter param = mode_params[ledMode];
+    NotifyModeChanged(ledMode, param);        
+
+    // Текущая настройка цвета пользователя
+    String sColor = String(userColor.r) + ":" + String(userColor.g) + ":" + String(userColor.b);      
+    Serial.println("User color: RGB:" + sColor); 
+    client.publish(MQTT::Publish(TOPIC_MODE_SET, "RGB:" + sColor).set_retain().set_qos(1));
+  }
+}
+
 void NotifyKnownModes() {
   String list = 
     "2[Радуга плавная]:" 
