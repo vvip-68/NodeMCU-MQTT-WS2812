@@ -189,7 +189,7 @@ void processCommand(String data) {
     if (cnt == 1) {      
         Serial.println("Current brightness: " + String(max_bright)); 
         if (client.connected()) 
-          client.publish(TOPIC_MODE_SET, "BR:" + String(max_bright));
+          client.publish(MQTT::Publish(TOPIC_MODE_SET, "BR:" + String(max_bright)).set_retain().set_qos(1));
         
         NotifyInfo("Processed -> [" + data + "]");
         
@@ -214,7 +214,7 @@ void processCommand(String data) {
 
       // Отправить установленное значение яркости, чтобы клиенты могли его обновить у себя
       if (client.connected()) 
-          client.publish(TOPIC_MODE_SET, "BR:" + String(max_bright));
+          client.publish(MQTT::Publish(TOPIC_MODE_SET, "BR:" + String(max_bright)).set_retain().set_qos(1));
           
       NotifyInfo("Processed -> [" + data + "]");
       
@@ -388,7 +388,7 @@ void processCommand(String data) {
       
       Serial.println("User color: RGB:" + sColor); 
       if (client.connected()) 
-        client.publish(TOPIC_MODE_SET, "RGB:" + sColor);
+        client.publish(MQTT::Publish(TOPIC_MODE_SET, "RGB:" + sColor).set_retain().set_qos(1));
         
       NotifyInfo("Processed -> [" + data + "]");
       
@@ -423,7 +423,7 @@ void processCommand(String data) {
     if (client.connected()) {
       String sColor = String(userColor.r) + ":" + String(userColor.g) + ":" + String(userColor.b);      
       if (client.connected()) 
-        client.publish(TOPIC_MODE_SET, "RGB:" + sColor);
+        client.publish(MQTT::Publish(TOPIC_MODE_SET, "RGB:" + sColor).set_retain().set_qos(1));
     }
 
     ledMode = 0;
@@ -445,7 +445,7 @@ void processCommand(String data) {
       power = powerOn ? "ON" : "OFF";
       Serial.println("Power: " + power); 
       if (client.connected()) 
-        client.publish(TOPIC_MODE_SET, "PWR:" + power);
+        client.publish(MQTT::Publish(TOPIC_MODE_SET, "PWR:" + power).set_retain().set_qos(1));
         
       NotifyInfo("Processed -> [" + data + "]");
       return;
@@ -466,7 +466,7 @@ void processCommand(String data) {
 
         // Отправить установленное значение вкл/выкл, чтобы клиенты могли его обновить у себя
         if (client.connected()) 
-          client.publish(TOPIC_MODE_SET, "PWR:OFF");
+          client.publish(MQTT::Publish(TOPIC_MODE_SET, "PWR:OFF").set_retain().set_qos(1));
           
         NotifyInfo("Processed -> [" + data + "]");
         return;   
@@ -481,7 +481,7 @@ void processCommand(String data) {
 
         // Отправить установленное значение вкл/выкл, чтобы клиенты могли его обновить у себя
         if (client.connected()) 
-          client.publish(TOPIC_MODE_SET, "PWR:ON");
+          client.publish(MQTT::Publish(TOPIC_MODE_SET, "PWR:ON").set_retain().set_qos(1));
           
         NotifyInfo("Processed -> [" + data + "]");
         return;
