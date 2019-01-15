@@ -186,9 +186,10 @@ void processCommand(String data) {
     String bright =  getValue(data, ':', 1);
     
     // Запрос текущего значения установленной яркости
-    if (cnt == 1) {      
+    if (cnt == 1) {    
+      Serial.println("Brightness: " + String(max_bright));  
       if (client.connected()) 
-        client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_retain().set_qos(1));
+        client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_qos(1));
     } else 
 
     // Установка значения максимальной яркости
@@ -198,7 +199,6 @@ void processCommand(String data) {
       if (br < 1) br = 1;
       if (br > 255) br = 255;
       max_bright = br;
-      EEPROM.write(0, br);
       LEDS.setBrightness(max_bright);  // задать максимально доступную режимам яркость ленты
       
       // Если спец-режим (100..106) - для изменения яркости требуется переформировать параметры в массиве светодиодов
@@ -210,7 +210,7 @@ void processCommand(String data) {
 
       // Отправить установленное значение яркости, чтобы клиенты могли его обновить у себя
       if (client.connected()) 
-        client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_retain().set_qos(1));
+        client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_qos(1));
       
     } else {      
       NotifyError("Wrong params: expected: BR:XXX; received: " + data);      
@@ -218,6 +218,7 @@ void processCommand(String data) {
     return;
   }
 
+  // PM               - запросить текущий выполняющийся режим
   // PM:N             - запросить текущие параметры для режима N
   // PM:N:T:D:S:P:U:A - установить для режима N указанные параметры
   //  N - номер режима - 2..MAX_EFFECT
@@ -231,13 +232,14 @@ void processCommand(String data) {
 
     String mode =  getValue(data, ':', 1);
     int iMode = mode.toInt();    
-    
     bool isSpecMode = isSpecialMode(iMode);
-    if (isSpecMode) {
-      // NotifyInfo("Mode: " + String(iMode)+ " is special");
+
+    if (cnt == 1) {
+      ModeParameter param = mode_params[ledMode];
+      NotifyModeChanged(ledMode, param);   
     }
     
-    else if (iMode < 2 || iMode > MAX_EFFECT) {    
+    else if (!isSpecMode && (iMode < 2 || iMode > MAX_EFFECT)) {    
       NotifyError("Unknown mode: " + String(iMode));
     }
 
@@ -247,7 +249,12 @@ void processCommand(String data) {
     }
 
     else if (cnt == 8) {
-      
+
+      if (isSpecMode) {
+        NotifyInfo("PM: mode " + String(iMode)+ " is special, has no params for get or set");
+        return;
+      }
+
       ModeParameter param = mode_params[iMode];
 
       param.duration = getValue(data, ':', 2).toInt();
@@ -324,17 +331,6 @@ void processCommand(String data) {
     return;
   }
 
-  // AM - Полчить параметры текущего активного режима - используется внешней управляющей программой
-  if (cmd == "AM") {
-    if (cnt == 1) {
-      ModeParameter param = mode_params[ledMode];
-      NotifyModeChanged(ledMode, param);        
-    } else {
-      NotifyError("Wrong params: expected: AM; received: " + data);
-    }
-    return;
-  }
-
   // DO:N - Включить указанный режим
   if (cmd == "DO") {
 
@@ -373,7 +369,7 @@ void processCommand(String data) {
       
       Serial.println("User color: RGB:" + sColor); 
       if (client.connected()) 
-        client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + sColor).set_retain().set_qos(1));
+        client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + sColor).set_qos(1));
         
       return;
     }
@@ -405,7 +401,7 @@ void processCommand(String data) {
     // Отправить установленное значение цвета, чтобы клиенты могли его обновить у себя
     if (client.connected()) {
       String sColor = String(userColor.r) + ":" + String(userColor.g) + ":" + String(userColor.b);      
-      client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + sColor).set_retain().set_qos(1));
+      client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + sColor).set_qos(1));
     }
 
     ledMode = 0;
@@ -425,7 +421,7 @@ void processCommand(String data) {
       power = powerOn ? "ON" : "OFF";
       Serial.println("Power: " + power); 
       if (client.connected()) 
-        client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:" + power).set_retain().set_qos(1));
+        client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:" + power).set_qos(1));
       return;
     }
 
@@ -444,7 +440,7 @@ void processCommand(String data) {
 
         // Отправить установленное значение вкл/выкл, чтобы клиенты могли его обновить у себя
         if (client.connected()) 
-          client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:OFF").set_retain().set_qos(1));
+          client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:OFF").set_qos(1));
           
         return;   
       }
@@ -458,7 +454,7 @@ void processCommand(String data) {
 
         // Отправить установленное значение вкл/выкл, чтобы клиенты могли его обновить у себя
         if (client.connected()) 
-          client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:ON").set_retain().set_qos(1));
+          client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:ON").set_qos(1));
           
         return;
       }

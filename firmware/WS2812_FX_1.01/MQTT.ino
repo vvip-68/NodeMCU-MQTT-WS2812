@@ -33,13 +33,13 @@ void NotifyOnConnect() {
   
   if (client.connected()) {    
     // Текущее состояние питания
-    client.publish(TOPIC_MODE_PWR, "PWR:" + power);
+    client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:" + power).set_qos(1));
 
     // Текущая яркость
-    client.publish(TOPIC_MODE_BR, "BR:" + String(max_bright));
+    client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_qos(1));
 
     // Текущая настройка цвета пользователя
-    client.publish(TOPIC_MODE_RGB, "RGB:" + color);
+    client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + color).set_qos(1));
 
     // Текущий режим
     ModeParameter param = mode_params[ledMode];

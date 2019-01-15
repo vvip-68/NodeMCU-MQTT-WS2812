@@ -31,7 +31,7 @@
 #define TOPIC_MODE_FAV "led/mode/fav"   // Топик - отправка уведомления о списке любимых режимов
 #define TOPIC_MODE_LST "led/mode/lst"   // Топик - отправка уведомления о полном списке режимов
 
-// Раскомментируйте следующую строку, если вы задаете параметры подключения к WiFi и MQTT серверу
+// Раскомментируйте следующую строку, если впараметры подключения к WiFi и MQTT серверу задаются
 // явным образом в блоке ниже. Если строка закомментирована - блок определения параметров подключения в
 // точно таком же формате вынесен в отдельный файл 'settings.h' и переменные при сборке скетча будут браться из него.
 
@@ -59,7 +59,8 @@ const char *mqtt_pass = "password";         // Пароль от сервера
     BR:XXX         - установить новую яркость 0..255
     BR             - получить текущее значение яркости 0..255
         
-    PM:N           - отправить серверу параметры режима с номером N
+    PM             - получить пераметры и номер текущего активного режима 
+    PM:N           - получить параметры режима с номером N
     PM:N:T:D:S:U:A - установить для режима N указанные параметры
        N - номер режима - 2..MAX_EFFECT
        T - время "проигрывания" режима 15..255 сек
@@ -84,7 +85,6 @@ const char *mqtt_pass = "password";         // Пароль от сервера
      1000 - переключиться в режим случайной смены эффектов        
      
     SV             - сохранить установленный параметры в постоянной памяти (EEPROM) 
-    AM             - получить пераметры и номер текущего активного режима (формат - как для команды PM) 
 
     US:N:U         - переключить использование режима N, где U: 0 - не использовать, 1 - использовать
 
@@ -106,7 +106,7 @@ const char *mqtt_pass = "password";         // Пароль от сервера
     topic: led/mode/cmd  value: PM:22                 // Запросить параметры режима 22
     topic: led/mode/cmd  value: BR:200                // Установить максимальную яркость ленты 200
     topic: led/mode/cmd  value: SV                    // Сохранить параметры режимов и настройки в EEPROM
-    topic: led/mode/cmd  value: AM                    // Запросить какой режим "проигрывается" и его параметры
+    topic: led/mode/cmd  value: PM                    // Запросить какой режим "проигрывается" и его параметры
     topic: led/mode/cmd  value: DO:22                 // Включить (активизировать) режим 22
     topic: led/mode/cmd  value: US:22:0               // Исключить режим 22 из списка "любимых" режимов
     topic: led/mode/cmd  value: RGB:255:0:255         // Включить всю ленту сиреневым цветом
@@ -191,23 +191,25 @@ bool fromMQTT = false;
 bool fromConsole = false;
 
 // Выделение места под массив комманд, поступающих от MQTT-сервера
-// В данной реализации библиотеки pubsubclient, если команды от сервера поступают слишком часто,
-// они не успевают обрабатываться и скетч "падает" с перезапуском по wdt.
-// Чтобы избежать этого поступающие команды будем складывать в очереди и выполнять их
-// с задержкой по таймеру в основном цикле программы
-#define QSIZE 5            // размер очереди
-char* cmdQueue[] = {
-  "....................",  // Placeholder 1
-  "....................",  // Placeholder 2
-  "....................",  // Placeholder 3
-  "....................",  // Placeholder 4 
-  "...................."   // Placeholder 5
-  };
+// Callback на поступление команды от MQTT сервера происходит асинхронно, и если предыдущая
+// команда еще не обработалась - происходит новый вызов обработчика команд, который не реентерабелен -
+// это приводит к краху приложения. Чтобы избежать этого поступающие команды будем складывать в очередь 
+// и выполнять их в основном цикле программы
+#define QSIZE 8                      // размер очереди
+char* cmdQueue[QSIZE] = {
+  "...................1",
+  "...................2",
+  "...................3",
+  "...................4",
+  "...................5",
+  "...................6",
+  "...................7",
+  "...................8"
+};
 
 byte queueWriteIdx = 0;              // позиция записи в очередь
 byte queueReadIdx = 0;               // позиция чтения из очереди
 byte queueLength = 0;                // количество команд в очереди
-unsigned long cmd_time;              // время выполнения последней команды 
 
 // ------------------ MQTT CALLBACK -------------------
 
@@ -216,18 +218,12 @@ void callback(const MQTT::Publish& pub) {
   String topic = pub.topic();
   String payload = pub.payload_string();
 
-  Serial.println("-----------------------------------");
-  Serial.println("Topic: "+topic+"; Payload: "+payload);
-   
   // проверяем из нужного ли нам топика пришли данные
   if (topic == TOPIC_MODE_CMD) {
     if (queueLength < QSIZE) {
-      Serial.println("Queue -> cmd="+payload);
       queueLength++;
-      payload.toCharArray(cmdQueue[queueWriteIdx++],20);
+      strcpy(cmdQueue[queueWriteIdx++], (const char*)(payload.c_str()));      
       if (queueWriteIdx >= QSIZE) queueWriteIdx = 0;
-    } else {
-      Serial.println("Queue full: cmd="+payload+" skipped");
     }
   }
 }
@@ -303,11 +299,10 @@ void loop() {
     }
   }
 
-  // Проверка наличия команд - раз в 1 сек. 
-  if (millis() - check_time > 1000) {
+  // Проверка наличия команд - раз в 250 мсек. 
+  if (millis() - check_time > 250) {
     
     check_time = millis();
-    String command;
     
     // Есть ли поступившие по каналу MQTT команды?
     if (client.connected()){
@@ -315,25 +310,20 @@ void loop() {
     }
 
     if (queueLength > 0) {
-      command = String(cmdQueue[queueReadIdx++]);
+      String command = String(cmdQueue[queueReadIdx++]);
       if (queueReadIdx >= QSIZE) queueReadIdx = 0;
       queueLength--;
-      Serial.println("Queue <- cmd="+command);
       fromMQTT = true;
       processCommand(command);
     }
     
     // Есть ли поступившие из монитора порта команды?
     if (Serial.available() > 0) {
-      command = Serial.readString();
+      String command = Serial.readString();
       command.replace("/r", " ");
       command.replace("/n", " ");
       command.trim(); 
       fromConsole = true;      
-      processCommand(command);
-    }
-
-    if (command.length()>0) {
       processCommand(command);
     }
   }
