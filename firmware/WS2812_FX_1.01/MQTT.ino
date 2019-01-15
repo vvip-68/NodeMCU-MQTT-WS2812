@@ -10,6 +10,16 @@ void NotifyError(String message) {
   if (client.connected()) client.publish(TOPIC_MODE_ERR, data);
 }
 
+void NotifyRandomModeChanged() {
+  String autoMode = randomModeOn ? "ON" : "OFF";
+  if (client.connected()) 
+    client.publish(TOPIC_MODE_RND, "RND:" + autoMode);
+  if (randomModeOn)
+    NotifyInfo("Автосмена режимов: включено");
+  else
+    NotifyInfo("Автосмена режимов: выключено");  
+}
+
 void NotifyFavorites() {
   String data = "";  
   for (int i = 0; i < fav_modes_num; i++) {
@@ -17,7 +27,7 @@ void NotifyFavorites() {
   }
   
   data = data.substring(0, data.length() - 1);
-  Serial.println("Favorites: [" + data + "]");
+  Serial.println("Выбраны режимы: [" + data + "]");
   if (client.connected()) client.publish(TOPIC_MODE_FAV, "FAV:" + data);
 }
 
@@ -26,10 +36,15 @@ void NotifyOnConnect() {
   Serial.println("------ При запуске программы ------"); 
 
   String power = powerOn ? "ON" : "OFF";
-  Serial.println("Power: " + power); 
-  Serial.println("Brightness: " + String(max_bright)); 
+  String power_ru = powerOn ? "ВКЛ" : "ВЫКЛ";
+  String autoMode = randomModeOn ? "ON" : "OFF";
+  String autoMode_ru = randomModeOn ? "ВКЛ" : "ВЫКЛ";
+  
+  Serial.println("Статус питания: " + power_ru); 
+  Serial.println("Яркость: " + String(max_bright)); 
   String color = String(userColor.r) + ":" + String(userColor.g) + ":" + String(userColor.b);      
-  Serial.println("User color: RGB:" + color); 
+  Serial.println("Задан цвет RGB:" + color); 
+  Serial.println("Автосмена режима:" + autoMode_ru); 
   
   if (client.connected()) {    
     // Текущее состояние питания
@@ -41,6 +56,12 @@ void NotifyOnConnect() {
     // Текущая настройка цвета пользователя
     client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + color).set_qos(1));
 
+    // Текущая состояние автосмены режима
+    client.publish(MQTT::Publish(TOPIC_MODE_RND, "RND:" + autoMode).set_qos(1));
+
+    // Список любимых режимов
+    NotifyFavorites();
+    
     // Текущий режим
     ModeParameter param = mode_params[ledMode];
     NotifyModeChanged(ledMode, param);        
@@ -97,7 +118,7 @@ void NotifyKnownModes() {
   if (client.connected()) client.publish(TOPIC_MODE_LST, "LST:" + list);  
 
   list.replace(":","\n");
-  Serial.println("Known modes:\n" + list);
+  Serial.println("Доступные режимы:\n" + list);
 }
 
 void NotifyModeChanged(int mode, struct ModeParameter param) {
@@ -123,6 +144,6 @@ void NotifyModeChanged(int mode, struct ModeParameter param) {
               String(param.use) + ":" + 
               (mode == ledMode ? "1" : "0");
     }
-    Serial.println("Mode: " + data); 
+    Serial.println("Режим: " + data); 
     if (client.connected()) client.publish(TOPIC_MODE_PM, data);
 }

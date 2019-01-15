@@ -24,6 +24,7 @@
 #define TOPIC_MODE_CMD "led/mode/cmd"   // Топик - получение команды управления
 #define TOPIC_MODE_NFO "led/mode/nfo"   // Топик - отправка информационных уведомлений
 #define TOPIC_MODE_ERR "led/mode/err"   // Топик - отправка уведомлений об ошибке
+#define TOPIC_MODE_RND "led/mode/rnd"   // Топик - отправка уведомлений о текущем состоянии автосмены режима
 #define TOPIC_MODE_PM  "led/mode/pm"    // Топик - отправка уведомления о параметрах режима
 #define TOPIC_MODE_BR  "led/mode/br"    // Топик - отправка уведомления о значении яркости
 #define TOPIC_MODE_PWR "led/mode/pwr"   // Топик - отправка уведомления о состоянии питания
@@ -96,6 +97,10 @@ const char *mqtt_pass = "password";         // Пароль от сервера
     PWR            - текущее состояние - OFF/ON
     PWR:ON         - включить ленту с восстановлением последнего режима из EEPROM
     PWR:OFF        - выключить ленту с запоминанием состояния ВЫКЛ и последнего режима в EEPROM
+
+    RND            - получить текущее значение автосмены режима - OFF/ON
+    RND:ON         - включить режим автосмены эффектов через заданные промежутки времени
+    RND:OFF        - выключить режим автосмены эффектов
 
     FAV            - текущий список любимых режимов - передается для управляющей Android программы
     LST            - список известных режимов - передается для управляющей Android программы
@@ -197,11 +202,11 @@ bool fromConsole = false;
 // и выполнять их в основном цикле программы
 #define QSIZE 8                      // размер очереди
 char* cmdQueue[QSIZE] = {
-  "...................1",
-  "...................2",
-  "...................3",
-  "...................4",
-  "...................5",
+  "...................1",            // !!! строки при инициализации должны бытьразными, иначе
+  "...................2",            // !!! "умный" компилятор свернет одинаковые константы в одну,
+  "...................3",            // !!! которая получит один адрес в памяти - изменение одного
+  "...................4",            // !!! элемента массива по индексу изменит другие элементы с 
+  "...................5",            // !!! тем же самым значением константы данной при инициализации
   "...................6",
   "...................7",
   "...................8"
@@ -277,7 +282,7 @@ void loop() {
 
   // Сразу после подключения - печатаем результат подключения
   if (connected && !printed_2) {
-    Serial.print("WiFi connected. IP address: ");
+    Serial.print("WiFi подключен. IP адрес: ");
     Serial.println(WiFi.localIP());
 
     printed_1 = false;
@@ -287,14 +292,14 @@ void loop() {
   // подключаемся к MQTT серверу
   if (WiFi.status() == WL_CONNECTED) {
     if (!client.connected()) {
-      Serial.println("Connecting to MQTT server");
+      Serial.println("Подключаемся к MQTT-серверу...");
       if (client.connect(MQTT::Connect("LedStripClient").set_auth(mqtt_user, mqtt_pass))) {
-        Serial.println("Connected to MQTT server");
+        Serial.println("Подключение к MQTT-серверу выполнено.");
         client.set_callback(callback);
         client.subscribe(TOPIC_MODE_CMD);
         NotifyOnConnect();    
       } else {
-        Serial.println("Could not connect to MQTT server");
+        Serial.println("Не удалось подключиться к MQTT-серверу.");
       }
     }
   }
@@ -338,21 +343,21 @@ void loop() {
 
   if (newMode > 0 && ledMode != newMode) {
     changeMode(newMode);                      // меняем режим через changeMode (там для каждого режима задаются параметры задержки)
-    Serial.print("Set new mode: ");
+    Serial.print("Новый режим: ");
     Serial.print(ledMode);
 
     if (fromMQTT) {
-       Serial.print(" from MQTT");
+       Serial.print(" от MQTT-сервера");
     }
     
     if (fromConsole) {
-       Serial.print(" from Console");
+       Serial.print(" с консоли");
     }
 
     if (randomModeOn) {
-       Serial.print(" automatic for ");
+       Serial.print(" автоматичекси на ");
        Serial.print(change_time / 1000);
-       Serial.print(" seconds");
+       Serial.print(" секунд");
     }
 
     fromMQTT = false;

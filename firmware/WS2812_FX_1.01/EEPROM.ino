@@ -61,11 +61,11 @@ void loadSettings() {
       resetModeVariables();
       change_time = 60000;
       set_def_params(i);      
-      param.duration = change_time / 1000;        // в секундах
-      param.delay    = thisdelay;
-      param.segment  = thisseg;
-      param.step     = thisstep;
-      param.use      = 1;         // использовать
+      param.duration = change_time / 1000; // в секундах
+      param.delay    = thisdelay;          // задержка между циклами "отрисовки" (меньше - быстрее)
+      param.segment  = thisseg;            // количествосегментовразделения ленты
+      param.step     = thisstep;           // шаг приращения параметра (больше - быстрее)
+      param.use      = 1;                  // использовать
     }
     mode_params[i] = param;
   }
@@ -91,7 +91,7 @@ void saveSettings() {
   }
   
   EEPROM.commit();
-  NotifyInfo("Parameters were sucessfully saved in EEPROM");
+  NotifyInfo("Настройки режимов сохранены.");
 }
 
 void savePowerSettings() {
@@ -106,5 +106,7 @@ void savePowerSettings() {
   EEPROM.write(11, powerOn ? 1 : 0);
     
   EEPROM.commit();
-  NotifyInfo("Power state was sucessfully saved in EEPROM");
+
+  String power_ru = powerOn ? "'ВКЛ'" : "'ВЫКЛ'";
+  NotifyInfo("Статус питания "+power_ru+" сохранен.");
 }

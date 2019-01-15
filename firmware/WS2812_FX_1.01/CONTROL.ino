@@ -111,7 +111,11 @@ void changeMode(int newmode) {
   }
 
   if (isSpecMode) {
+    bool oldRandomModeState = randomModeOn;
     randomModeOn = false; 
+    if (randomModeOn != oldRandomModeState) {
+      NotifyRandomModeChanged();
+    }
   } else {
     if (newmode < 2 || newmode > MAX_EFFECT) newmode = ledMode;    
     setAll(0, 0, 0);
@@ -138,12 +142,9 @@ void  prepareChangeMode(int newmode) {
   randomModeOn = newMode == 1000;                        // 1000 - автоматическая смена режимов
   change_time = 0;                                       // изменить режмим немедленно (при первой же возможности)
 
-  // Random Mode State is changed?
-  if (oldRandomModeState != randomModeOn) {
-    if (randomModeOn)
-      NotifyInfo("Auto change effects: on");
-    else
-      NotifyInfo("Auto change effects: off");
+  // Изменился режим автосмены эффектов??
+  if (randomModeOn != oldRandomModeState) {
+    NotifyRandomModeChanged();
   }
 }
 
@@ -187,7 +188,7 @@ void processCommand(String data) {
     
     // Запрос текущего значения установленной яркости
     if (cnt == 1) {    
-      Serial.println("Brightness: " + String(max_bright));  
+      Serial.println("Яркость: " + String(max_bright));  
       if (client.connected()) 
         client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_qos(1));
     } else 
@@ -213,7 +214,7 @@ void processCommand(String data) {
         client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_qos(1));
       
     } else {      
-      NotifyError("Wrong params: expected: BR:XXX; received: " + data);      
+      NotifyError("Неверные параметры: ожидается: BR:XXX; получено: " + data);      
     }
     return;
   }
@@ -240,7 +241,7 @@ void processCommand(String data) {
     }
     
     else if (!isSpecMode && (iMode < 2 || iMode > MAX_EFFECT)) {    
-      NotifyError("Unknown mode: " + String(iMode));
+      NotifyError("Неверный режим: " + String(iMode));
     }
 
     else if (cnt == 2) {
@@ -251,7 +252,7 @@ void processCommand(String data) {
     else if (cnt == 8) {
 
       if (isSpecMode) {
-        NotifyInfo("PM: mode " + String(iMode)+ " is special, has no params for get or set");
+        NotifyInfo("PM: режим " + String(iMode)+ " - специальный, не имеет настроек.");
         return;
       }
 
@@ -272,9 +273,8 @@ void processCommand(String data) {
 
       // Активировать данный режим?
       bool needActivate = getValue(data, ':', 7) == "1";
-      if (needActivate) {
+      if (powerOn && needActivate) {
         ledMode = 0;
-        powerOn = true;
         prepareChangeMode(iMode);
       } else {
         // Отправить установленные параметры режима, чтобы клиенты могли их обновить у себя
@@ -282,7 +282,7 @@ void processCommand(String data) {
       }
 
     } else {
-      NotifyError("Wrong params: expected: PM:N or PM:N:T:D:S:P:U:A; received: " + data);
+      NotifyError("Неверные параметры: ожидается: PM:N или PM:N:T:D:S:P:U:A; получено: " + data);
     }
     
     return;
@@ -293,7 +293,7 @@ void processCommand(String data) {
     if (cnt == 1) {
       saveSettings();
     } else {
-      NotifyError("Wrong params: expected: SV; received: " + data);
+      NotifyError("Неверные параметры: ожидается: SV; получено: " + data);
     }
     return;
   }
@@ -312,7 +312,7 @@ void processCommand(String data) {
       }
     
       else if (iMode < 2 || iMode > MAX_EFFECT) {    
-        NotifyError("Unknown mode: " + String(iMode));
+        NotifyError("Неверный режим: " + String(iMode));
       }
 
       else {    
@@ -326,7 +326,7 @@ void processCommand(String data) {
         NotifyModeChanged(iMode, param);        
       }
     } else {
-      NotifyError("Wrong params: expected: US:N:A; received: " + data);
+      NotifyError("Неверные параметры: ожидается: US:N:A; получено: " + data);
     }
     return;
   }
@@ -340,18 +340,21 @@ void processCommand(String data) {
     bool isSpecMode = isSpecialMode(iMode);
 
     if (!isSpecMode && (iMode < 2 || iMode > MAX_EFFECT)) {    
-      NotifyError("Unknown mode: " + String(iMode));
+      NotifyError("Неверный режим: " + String(iMode));
     }
     
     else if (cnt == 2) {
-      
-      powerOn = true;
-      ledMode = 0;
-      prepareChangeMode(iMode);
+
+      if (powerOn) {
+        ledMode = 0;
+        prepareChangeMode(iMode);
+      } else {
+        NotifyError("Питание отключено. Режим не активирован.");  
+      }
       
     } else {
       
-      NotifyError("Wrong params: expected: DO:N; received: " + data);
+      NotifyError("Неверные параметры: ожидается: DO:N; получено: " + data);
       
     }
     return;
@@ -367,7 +370,7 @@ void processCommand(String data) {
     if (cnt == 1) {
       String sColor = String(userColor.r) + ":" + String(userColor.g) + ":" + String(userColor.b);
       
-      Serial.println("User color: RGB:" + sColor); 
+      Serial.println("Задан цвет RGB:" + sColor); 
       if (client.connected()) 
         client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + sColor).set_qos(1));
         
@@ -394,7 +397,7 @@ void processCommand(String data) {
       userColor = CRGB(r,g,b);
     } else {
       
-      NotifyError("Wrong params: expected: RGB:DDD or RGB:#XXXXXX or RGB:R:G:B; received: " + data);
+      NotifyError("Неверные параметры: ожидается: RGB:DDD или RGB:#XXXXXX или RGB:R:G:B; Получено: " + data);
       return;
     }
 
@@ -404,22 +407,24 @@ void processCommand(String data) {
       client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + sColor).set_qos(1));
     }
 
-    ledMode = 0;
-    powerOn = true;
-    prepareChangeMode(107);
+    if (powerOn) {
+     ledMode = 0;
+      prepareChangeMode(107);
+    }
 
     return;
   }
 
   if (cmd == "PWR") {
 
-    String power;
+    String power, power_ru;
     
     // PWR - запрос сотояния включено/выключено
     if (cnt == 1) {
 
       power = powerOn ? "ON" : "OFF";
-      Serial.println("Power: " + power); 
+      power_ru = powerOn ? "ВКЛ" : "ВЫКЛ";
+      Serial.println("Статус питания: " + power_ru); 
       if (client.connected()) 
         client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:" + power).set_qos(1));
       return;
@@ -460,10 +465,39 @@ void processCommand(String data) {
       }
     }
       
-    NotifyError("Wrong params: expected: PWR or PFR:ON or PWR:OFF; received: " + data);
+    NotifyError("Неверные параметры: ожидается: PWR или PFR:ON или PWR:OFF; получено: " + data);
     return;
   }
   
+  if (cmd == "RND") {
+
+    String autoMode, autoMode_ru;
+    
+    // RND - запрос сотояния автосмены режима - включено/выключено
+    if (cnt == 1) {
+      NotifyRandomModeChanged();
+      return;
+    }
+      
+    if (cnt == 2) {
+
+      autoMode = getValue(data, ':', 1);
+      autoMode.toUpperCase();
+      
+      // OFF - выключить автосмену режимов
+      // ON  - включить автосмену режимов
+      if (autoMode == "OFF" || autoMode == "ON") {
+        randomModeOn = autoMode == "ON";
+        NotifyRandomModeChanged();
+        if (randomModeOn) change_time = 0;
+        return;   
+      }
+    }
+      
+    NotifyError("Неверные параметры: ожидается: RND; получено: " + data);
+    return;
+  }
+
   if (cmd == "FAV") {
     NotifyFavorites();
     return;
@@ -474,5 +508,5 @@ void processCommand(String data) {
     return;
   }
 
-  NotifyError("Unrecognized -> " + data);
+  NotifyError("Нераспознано -> " + data);
 }
