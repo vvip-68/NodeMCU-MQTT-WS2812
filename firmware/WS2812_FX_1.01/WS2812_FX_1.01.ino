@@ -21,10 +21,15 @@
 #define MAX_EFFECT 42         // эффекты от 2 до MAX_EFFECT; 
 #define EEPROM_OK 0xAF        // Флаг, показывающий, что данные в EEPROM были сохранены 
 
-#define TOPIC_MODE_SET "led/mode/set"   // Топик - отправка уведомления о переключении (смене) режима
 #define TOPIC_MODE_CMD "led/mode/cmd"   // Топик - получение команды управления
 #define TOPIC_MODE_NFO "led/mode/nfo"   // Топик - отправка информационных уведомлений
 #define TOPIC_MODE_ERR "led/mode/err"   // Топик - отправка уведомлений об ошибке
+#define TOPIC_MODE_PM  "led/mode/pm"    // Топик - отправка уведомления о параметрах режима
+#define TOPIC_MODE_BR  "led/mode/br"    // Топик - отправка уведомления о значении яркости
+#define TOPIC_MODE_PWR "led/mode/pwr"   // Топик - отправка уведомления о состоянии питания
+#define TOPIC_MODE_RGB "led/mode/rgb"   // Топик - отправка уведомления о пользовательском цвете
+#define TOPIC_MODE_FAV "led/mode/fav"   // Топик - отправка уведомления о списке любимых режимов
+#define TOPIC_MODE_LST "led/mode/lst"   // Топик - отправка уведомления о полном списке режимов
 
 // Раскомментируйте следующую строку, если вы задаете параметры подключения к WiFi и MQTT серверу
 // явным образом в блоке ниже. Если строка закомментирована - блок определения параметров подключения в
@@ -111,7 +116,7 @@ const char *mqtt_pass = "password";         // Пароль от сервера
     topic: led/mode/cmd  value: PWR:ON                // "Включить" эффекты с того места, где было программно выключено
 
   при смене режима серверу автоматически отправляется уведомление, например
-    topic: led/mode/set  value: PM:22:60:50:4:0:1:0     
+    topic: led/mode/pm  value: PM:22:60:50:4:0:1:0     
 */
 
 int max_bright = 255;         // максимальная яркость (0 - 255)
@@ -192,6 +197,7 @@ void callback(const MQTT::Publish& pub) {
    String topic = pub.topic();
    String payload = pub.payload_string();
 
+   Serial.println("-----------------------------------");
    Serial.println("Topic: "+topic+"; Payload: "+payload);
    
    // проверяем из нужного ли нам топика пришли данные
