@@ -33,9 +33,6 @@
     LED_COUNT 150                 // число светодиодов в кольце/ленте
     LED_DT D4                     // пин, куда подключен DIN ленты
 
-    TOPIC_MODE_SET "led/mode/set" // Топик - отправка уведомления о переключении (смене) режима
-    TOPIC_MODE_CMD "led/mode/cmd" // Топик - получение команды управления
-
     // ------------- WiFi & MQTT parameters --------------
     const char *ssid = "SSID";                  // Имя WiFi cети
     const char *pass = "PASS";                  // Пароль WiFi cети
