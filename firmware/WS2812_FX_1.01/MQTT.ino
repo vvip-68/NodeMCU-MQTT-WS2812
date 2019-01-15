@@ -1,12 +1,12 @@
 void NotifyInfo(String message) {
+  Serial.println(message); 
   String data = "NFO: " + message;
-  Serial.println(data); 
   if (client.connected()) client.publish(TOPIC_MODE_NFO, data);
 }
 
 void NotifyError(String message) {
+  Serial.println(message); 
   String data = "ERR: " + message;
-  Serial.println(data); 
   if (client.connected()) client.publish(TOPIC_MODE_ERR, data);
 }
 
@@ -18,29 +18,36 @@ void NotifyFavorites() {
   
   data = data.substring(0, data.length() - 1);
   Serial.println("Favorites: [" + data + "]");
-  if (client.connected()) client.publish(TOPIC_MODE_ERR, "FAV:" + data);
+  if (client.connected()) client.publish(TOPIC_MODE_FAV, "FAV:" + data);
 }
 
 void NotifyOnConnect() {  
-  if (client.connected()) {
+  Serial.println();
+  Serial.println("------ При запуске программы ------"); 
+
+  String power = powerOn ? "ON" : "OFF";
+  Serial.println("Power: " + power); 
+  Serial.println("Brightness: " + String(max_bright)); 
+  String color = String(userColor.r) + ":" + String(userColor.g) + ":" + String(userColor.b);      
+  Serial.println("User color: RGB:" + color); 
+  
+  if (client.connected()) {    
     // Текущее состояние питания
-    power = powerOn ? "ON" : "OFF";
-    Serial.println("Power: " + power); 
-    client.publish(MQTT::Publish(TOPIC_MODE_SET, "PWR:" + power).set_retain().set_qos(1));
+    client.publish(TOPIC_MODE_PWR, "PWR:" + power);
 
     // Текущая яркость
-    Serial.println("Current brightness: " + String(max_bright)); 
-    client.publish(MQTT::Publish(TOPIC_MODE_SET, "BR:" + String(max_bright)).set_retain().set_qos(1));
+    client.publish(TOPIC_MODE_BR, "BR:" + String(max_bright));
+
+    // Текущая настройка цвета пользователя
+    client.publish(TOPIC_MODE_RGB, "RGB:" + color);
 
     // Текущий режим
     ModeParameter param = mode_params[ledMode];
     NotifyModeChanged(ledMode, param);        
-
-    // Текущая настройка цвета пользователя
-    String sColor = String(userColor.r) + ":" + String(userColor.g) + ":" + String(userColor.b);      
-    Serial.println("User color: RGB:" + sColor); 
-    client.publish(MQTT::Publish(TOPIC_MODE_SET, "RGB:" + sColor).set_retain().set_qos(1));
   }
+
+  Serial.println("-----------------------------------"); 
+  Serial.println();
 }
 
 void NotifyKnownModes() {
@@ -87,7 +94,7 @@ void NotifyKnownModes() {
     "41[Гирлянда (медленно)]:" 
     "42[Гирлянда (плавно)]";
 
-  if (client.connected()) client.publish(TOPIC_MODE_ERR, "LST:" + list);  
+  if (client.connected()) client.publish(TOPIC_MODE_LST, "LST:" + list);  
 
   list.replace(":","\n");
   Serial.println("Known modes:\n" + list);
@@ -116,6 +123,6 @@ void NotifyModeChanged(int mode, struct ModeParameter param) {
               String(param.use) + ":" + 
               (mode == ledMode ? "1" : "0");
     }
-    Serial.println("Mode paramters: " + data); 
-    if (client.connected()) client.publish(TOPIC_MODE_SET, data);
+    Serial.println("Mode: " + data); 
+    if (client.connected()) client.publish(TOPIC_MODE_PM, data);
 }

@@ -187,12 +187,8 @@ void processCommand(String data) {
     
     // Запрос текущего значения установленной яркости
     if (cnt == 1) {      
-        Serial.println("Current brightness: " + String(max_bright)); 
-        if (client.connected()) 
-          client.publish(MQTT::Publish(TOPIC_MODE_SET, "BR:" + String(max_bright)).set_retain().set_qos(1));
-        
-        NotifyInfo("Processed -> [" + data + "]");
-        
+      if (client.connected()) 
+        client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_retain().set_qos(1));
     } else 
 
     // Установка значения максимальной яркости
@@ -214,14 +210,10 @@ void processCommand(String data) {
 
       // Отправить установленное значение яркости, чтобы клиенты могли его обновить у себя
       if (client.connected()) 
-          client.publish(MQTT::Publish(TOPIC_MODE_SET, "BR:" + String(max_bright)).set_retain().set_qos(1));
-          
-      NotifyInfo("Processed -> [" + data + "]");
+        client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_retain().set_qos(1));
       
-    } else {
-      
-      NotifyError("Wrong params: expected: BR:XXX; received: " + data);
-      
+    } else {      
+      NotifyError("Wrong params: expected: BR:XXX; received: " + data);      
     }
     return;
   }
@@ -242,7 +234,7 @@ void processCommand(String data) {
     
     bool isSpecMode = isSpecialMode(iMode);
     if (isSpecMode) {
-      NotifyInfo("Mode: " + String(iMode)+ " is special");
+      // NotifyInfo("Mode: " + String(iMode)+ " is special");
     }
     
     else if (iMode < 2 || iMode > MAX_EFFECT) {    
@@ -250,9 +242,8 @@ void processCommand(String data) {
     }
 
     else if (cnt == 2) {
-        ModeParameter param = mode_params[iMode];
-        NotifyModeChanged(iMode, param);
-        NotifyInfo("Processed -> [" + data + "]");
+      ModeParameter param = mode_params[iMode];
+      NotifyModeChanged(iMode, param);
     }
 
     else if (cnt == 8) {
@@ -283,8 +274,6 @@ void processCommand(String data) {
         NotifyModeChanged(iMode, param);
       }
 
-      NotifyInfo("Processed -> [" + data + "]");
-
     } else {
       NotifyError("Wrong params: expected: PM:N or PM:N:T:D:S:P:U:A; received: " + data);
     }
@@ -296,7 +285,6 @@ void processCommand(String data) {
   if (cmd == "SV") {
     if (cnt == 1) {
       saveSettings();
-      NotifyInfo("Processed -> [" + data + "]");
     } else {
       NotifyError("Wrong params: expected: SV; received: " + data);
     }
@@ -313,7 +301,7 @@ void processCommand(String data) {
       bool isSpecMode = isSpecialMode(iMode);
       
       if (isSpecMode) {
-        NotifyInfo("Mode: " + String(iMode)+ " is special");
+        //NotifyInfo("Mode: " + String(iMode)+ " is special");
       }
     
       else if (iMode < 2 || iMode > MAX_EFFECT) {    
@@ -329,7 +317,6 @@ void processCommand(String data) {
           rebuildFavorites();
         }
         NotifyModeChanged(iMode, param);        
-        NotifyInfo("Processed -> [" + data + "]");
       }
     } else {
       NotifyError("Wrong params: expected: US:N:A; received: " + data);
@@ -342,7 +329,6 @@ void processCommand(String data) {
     if (cnt == 1) {
       ModeParameter param = mode_params[ledMode];
       NotifyModeChanged(ledMode, param);        
-      NotifyInfo("Processed -> [" + data + "]");
     } else {
       NotifyError("Wrong params: expected: AM; received: " + data);
     }
@@ -366,7 +352,6 @@ void processCommand(String data) {
       powerOn = true;
       ledMode = 0;
       prepareChangeMode(iMode);
-      NotifyInfo("Processed: [" + data + "]");
       
     } else {
       
@@ -388,10 +373,8 @@ void processCommand(String data) {
       
       Serial.println("User color: RGB:" + sColor); 
       if (client.connected()) 
-        client.publish(MQTT::Publish(TOPIC_MODE_SET, "RGB:" + sColor).set_retain().set_qos(1));
+        client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + sColor).set_retain().set_qos(1));
         
-      NotifyInfo("Processed -> [" + data + "]");
-      
       return;
     }
 
@@ -422,16 +405,13 @@ void processCommand(String data) {
     // Отправить установленное значение цвета, чтобы клиенты могли его обновить у себя
     if (client.connected()) {
       String sColor = String(userColor.r) + ":" + String(userColor.g) + ":" + String(userColor.b);      
-      if (client.connected()) 
-        client.publish(MQTT::Publish(TOPIC_MODE_SET, "RGB:" + sColor).set_retain().set_qos(1));
+      client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + sColor).set_retain().set_qos(1));
     }
 
     ledMode = 0;
     powerOn = true;
     prepareChangeMode(107);
 
-    NotifyInfo("Processed: [" + data + "]");
-    
     return;
   }
 
@@ -445,9 +425,8 @@ void processCommand(String data) {
       power = powerOn ? "ON" : "OFF";
       Serial.println("Power: " + power); 
       if (client.connected()) 
-        client.publish(MQTT::Publish(TOPIC_MODE_SET, "PWR:" + power).set_retain().set_qos(1));
+        client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:" + power).set_retain().set_qos(1));
         
-      NotifyInfo("Processed -> [" + data + "]");
       return;
     }
 
@@ -466,9 +445,8 @@ void processCommand(String data) {
 
         // Отправить установленное значение вкл/выкл, чтобы клиенты могли его обновить у себя
         if (client.connected()) 
-          client.publish(MQTT::Publish(TOPIC_MODE_SET, "PWR:OFF").set_retain().set_qos(1));
+          client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:OFF").set_retain().set_qos(1));
           
-        NotifyInfo("Processed -> [" + data + "]");
         return;   
       }
     
@@ -481,9 +459,8 @@ void processCommand(String data) {
 
         // Отправить установленное значение вкл/выкл, чтобы клиенты могли его обновить у себя
         if (client.connected()) 
-          client.publish(MQTT::Publish(TOPIC_MODE_SET, "PWR:ON").set_retain().set_qos(1));
+          client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:ON").set_retain().set_qos(1));
           
-        NotifyInfo("Processed -> [" + data + "]");
         return;
       }
     }
