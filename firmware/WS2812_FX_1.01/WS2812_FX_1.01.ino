@@ -190,27 +190,51 @@ bool randomModeOn = false;
 bool fromMQTT = false;
 bool fromConsole = false;
 
+// Выделение места под массив комманд, поступающих от MQTT-сервера
+// В данной реализации библиотеки pubsubclient, если команды от сервера поступают слишком часто,
+// они не успевают обрабатываться и скетч "падает" с перезапуском по wdt.
+// Чтобы избежать этого поступающие команды будем складывать в очереди и выполнять их
+// с задержкой по таймеру в основном цикле программы
+#define QSIZE 5            // размер очереди
+char* cmdQueue[] = {
+  "....................",  // Placeholder 1
+  "....................",  // Placeholder 2
+  "....................",  // Placeholder 3
+  "....................",  // Placeholder 4 
+  "...................."   // Placeholder 5
+  };
+
+byte queueWriteIdx = 0;              // позиция записи в очередь
+byte queueReadIdx = 0;               // позиция чтения из очереди
+byte queueLength = 0;                // количество команд в очереди
+unsigned long cmd_time;              // время выполнения последней команды 
+
 // ------------------ MQTT CALLBACK -------------------
 
 void callback(const MQTT::Publish& pub) {
 
-   String topic = pub.topic();
-   String payload = pub.payload_string();
+  String topic = pub.topic();
+  String payload = pub.payload_string();
 
-   Serial.println("-----------------------------------");
-   Serial.println("Topic: "+topic+"; Payload: "+payload);
+  Serial.println("-----------------------------------");
+  Serial.println("Topic: "+topic+"; Payload: "+payload);
    
-   // проверяем из нужного ли нам топика пришли данные
-   if (topic == TOPIC_MODE_CMD) {
-     fromMQTT = true;
-     processCommand(payload);
-   }
+  // проверяем из нужного ли нам топика пришли данные
+  if (topic == TOPIC_MODE_CMD) {
+    if (queueLength < QSIZE) {
+      Serial.println("Queue -> cmd="+payload);
+      queueLength++;
+      payload.toCharArray(cmdQueue[queueWriteIdx++],20);
+      if (queueWriteIdx >= QSIZE) queueWriteIdx = 0;
+    } else {
+      Serial.println("Queue full: cmd="+payload+" skipped");
+    }
+  }
 }
 
 // ----------------- ОСНОВНАЯ ЧАСТЬ ------------------
 
-void setup()
-{
+void setup() {
   Serial.begin(115200);
   delay(100);
 
@@ -283,20 +307,33 @@ void loop() {
   if (millis() - check_time > 1000) {
     
     check_time = millis();
+    String command;
     
     // Есть ли поступившие по каналу MQTT команды?
     if (client.connected()){
-      client.loop();
+      client.loop();      
     }
-  
+
+    if (queueLength > 0) {
+      command = String(cmdQueue[queueReadIdx++]);
+      if (queueReadIdx >= QSIZE) queueReadIdx = 0;
+      queueLength--;
+      Serial.println("Queue <- cmd="+command);
+      fromMQTT = true;
+      processCommand(command);
+    }
+    
     // Есть ли поступившие из монитора порта команды?
     if (Serial.available() > 0) {
-      String command = Serial.readString();
+      command = Serial.readString();
       command.replace("/r", " ");
       command.replace("/n", " ");
-      command.trim();
- 
-      fromConsole = true;
+      command.trim(); 
+      fromConsole = true;      
+      processCommand(command);
+    }
+
+    if (command.length()>0) {
       processCommand(command);
     }
   }

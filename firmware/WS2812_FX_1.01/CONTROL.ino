@@ -426,7 +426,6 @@ void processCommand(String data) {
       Serial.println("Power: " + power); 
       if (client.connected()) 
         client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:" + power).set_retain().set_qos(1));
-        
       return;
     }
 
