@@ -130,8 +130,9 @@ void changeMode(int newmode) {
 
   if (newmode >= 2 && newmode <= MAX_EFFECT) {    
     setAll(0, 0, 0);
-    NotifyModeChanged(newmode, param);
   }  
+  
+  NotifyModeChanged(newmode, param);
 }
 
 void  prepareChangeMode(int newmode) {
@@ -181,6 +182,11 @@ void processCommand(String data) {
   
   int cnt = getParamCount(data, ':');
   String cmd =  getValue(data, ':', 0);
+
+  if (!powerOn && cmd != "PWR") {
+    NotifyError("Питание отключено. Режим не активирован.");  
+    return;
+  }
 
   // BR:XXX - установить новую яркость
   if (cmd == "BR") {
@@ -273,7 +279,7 @@ void processCommand(String data) {
 
       // Активировать данный режим?
       bool needActivate = getValue(data, ':', 7) == "1";
-      if (powerOn && needActivate) {
+      if (needActivate) {
         ledMode = 0;
         prepareChangeMode(iMode);
       } else {
@@ -345,12 +351,8 @@ void processCommand(String data) {
     
     else if (cnt == 2) {
 
-      if (powerOn) {
-        ledMode = 0;
-        prepareChangeMode(iMode);
-      } else {
-        NotifyError("Питание отключено. Режим не активирован.");  
-      }
+      ledMode = 0;
+      prepareChangeMode(iMode);
       
     } else {
       
@@ -440,8 +442,8 @@ void processCommand(String data) {
       if (power == "OFF") {
         powerOn = false;
         userMode = ledMode;
-        savePowerSettings();
-        prepareChangeMode(99);
+        savePowerSettings(); 
+        prepareChangeMode(99); 
 
         // Отправить установленное значение вкл/выкл, чтобы клиенты могли его обновить у себя
         if (client.connected()) 
@@ -452,15 +454,16 @@ void processCommand(String data) {
     
       // ON - включить ленту с восстановлением последнего режима из EEPROM
       if (power == "ON") {        
-        ledMode = 0;
         powerOn = true;
-        prepareChangeMode(userMode == 99 || userMode == 990 ? 1000 : userMode);
+        ledMode = 0;
+        newMode = userMode == 99 || userMode == 990 ? 1000 : userMode;
+        prepareChangeMode(newMode);
+        randomModeOn = randomModeOnBeforePowerOff;
         savePowerSettings();
 
-        // Отправить установленное значение вкл/выкл, чтобы клиенты могли его обновить у себя
-        if (client.connected()) 
-          client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:ON").set_qos(1));
-          
+        // Отправить установленное значение и все значения как при аппаратном включении питания,
+        // чтобы клиенты восстановили у себя состояние элементов управления
+        NotifyOnConnect();          
         return;
       }
     }
@@ -471,11 +474,17 @@ void processCommand(String data) {
   
   if (cmd == "RND") {
 
-    String autoMode, autoMode_ru;
+    String autoMode;
     
     // RND - запрос сотояния автосмены режима - включено/выключено
     if (cnt == 1) {
-      NotifyRandomModeChanged();
+      // Текущаее состояние автосмены режима
+      if (randomModeOn)
+        Serial.println("Автосмена режимов: включено");
+      else
+        Serial.println("Автосмена режимов: выключено");  
+      autoMode = randomModeOn ? "ON" : "OFF";
+      client.publish(MQTT::Publish(TOPIC_MODE_RND, "RND:" + autoMode).set_qos(1));
       return;
     }
       

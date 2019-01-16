@@ -40,11 +40,12 @@ void loadSettings() {
     max_bright = 128;
     userColor = CRGB(255,255,255);
     powerOn = true;
-    randomModeOn = true;
+    randomModeOn = true;    
   }
     
   userMode = mode == 0 ? 1000 : mode;
   newMode = powerOn ? userMode : 99;
+  randomModeOnBeforePowerOff = randomModeOn;
 
   int addr = 12;
   for (int i = 2; i <= MAX_EFFECT; i++) {
@@ -95,6 +96,8 @@ void saveSettings() {
 }
 
 void savePowerSettings() {
+
+  randomModeOnBeforePowerOff = randomModeOn;
 
   // Поставить отметку, что EEPROM инициализировано параметрами эффектов
   EEPROM.write(1, max_bright);

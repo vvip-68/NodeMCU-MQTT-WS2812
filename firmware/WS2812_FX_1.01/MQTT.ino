@@ -56,11 +56,14 @@ void NotifyOnConnect() {
     // Текущая настройка цвета пользователя
     client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + color).set_qos(1));
 
-    // Текущая состояние автосмены режима
+    // Текущаее состояние автосмены режима
     client.publish(MQTT::Publish(TOPIC_MODE_RND, "RND:" + autoMode).set_qos(1));
 
     // Список любимых режимов
     NotifyFavorites();
+
+    // Список известных режимов
+    NotifyKnownModes();
     
     // Текущий режим
     ModeParameter param = mode_params[ledMode];

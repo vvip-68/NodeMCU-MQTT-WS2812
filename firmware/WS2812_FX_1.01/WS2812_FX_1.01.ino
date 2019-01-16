@@ -192,6 +192,7 @@ byte fav_modes_num = 0;  // текущий размер массива режи�
 
 unsigned long change_time, last_change, check_time;     
 bool randomModeOn = false;
+bool randomModeOnBeforePowerOff = false;
 bool fromMQTT = false;
 bool fromConsole = false;
 
@@ -334,7 +335,7 @@ void loop() {
   }
 
   // Если режим - случайная смена и подошло время смены режима - переключить
-  if (randomModeOn) {
+  if (randomModeOn && ledMode == newMode) {
     if (millis() - last_change > change_time) {
       newMode = getRandomMode();
       last_change = millis();
