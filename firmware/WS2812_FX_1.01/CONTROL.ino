@@ -132,7 +132,7 @@ void changeMode(int newmode) {
     setAll(0, 0, 0);
   }  
   
-  NotifyModeChanged(newmode, param);
+  NotifyModeChanged(newmode, param, "PM");
 }
 
 void  prepareChangeMode(int newmode) {
@@ -243,7 +243,7 @@ void processCommand(String data) {
 
     if (cnt == 1) {
       ModeParameter param = mode_params[ledMode];
-      NotifyModeChanged(ledMode, param);   
+      NotifyModeChanged(ledMode, param, "PM");   
     }
     
     else if (!isSpecMode && (iMode < 2 || iMode > MAX_EFFECT)) {    
@@ -252,7 +252,7 @@ void processCommand(String data) {
 
     else if (cnt == 2) {
       ModeParameter param = mode_params[iMode];
-      NotifyModeChanged(iMode, param);
+      NotifyModeChanged(iMode, param, "PM");
     }
 
     else if (cnt == 8) {
@@ -284,11 +284,37 @@ void processCommand(String data) {
         prepareChangeMode(iMode);
       } else {
         // Отправить установленные параметры режима, чтобы клиенты могли их обновить у себя
-        NotifyModeChanged(iMode, param);
+        NotifyModeChanged(iMode, param, "PM");
       }
 
     } else {
-      NotifyError("Неверные параметры: ожидается: PM:N или PM:N:T:D:S:P:U:A; получено: " + data);
+      NotifyError("Неверные параметры: ожидается: PM или PM:N или PM:N:T:D:S:P:U:A; получено: " + data);
+    }
+    
+    return;
+  }
+
+  if (cmd == "EDT") {
+
+    String mode =  getValue(data, ':', 1);
+    int iMode = mode.toInt();    
+    bool isSpecMode = isSpecialMode(iMode);
+    
+    if (!isSpecMode && (iMode < 2 || iMode > MAX_EFFECT)) {    
+      NotifyError("Неверный режим: " + String(iMode));
+      return;
+    }
+
+    if (isSpecMode) {    
+      NotifyError("Изменение настроек " + String(iMode) + " не поддерживается");
+    }
+
+    else if (cnt == 2) {
+      ModeParameter param = mode_params[iMode];
+      NotifyModeChanged(iMode, param, "EDT");
+
+    } else {
+      NotifyError("Неверные параметры: ожидается: EDT:N; получено: " + data);
     }
     
     return;
@@ -329,7 +355,7 @@ void processCommand(String data) {
           mode_params[iMode] = param;
           rebuildFavorites();
         }
-        NotifyModeChanged(iMode, param);        
+        NotifyModeChanged(iMode, param, "PM");        
       }
     } else {
       NotifyError("Неверные параметры: ожидается: US:N:A; получено: " + data);

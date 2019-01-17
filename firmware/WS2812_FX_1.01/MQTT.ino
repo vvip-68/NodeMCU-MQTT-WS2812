@@ -67,7 +67,7 @@ void NotifyOnConnect() {
     
     // Текущий режим
     ModeParameter param = mode_params[ledMode];
-    NotifyModeChanged(ledMode, param);        
+    NotifyModeChanged(ledMode, param, "PM");        
   }
 
   Serial.println("-----------------------------------"); 
@@ -124,7 +124,7 @@ void NotifyKnownModes() {
   Serial.println("Доступные режимы:\n" + list);
 }
 
-void NotifyModeChanged(int mode, struct ModeParameter param) {
+void NotifyModeChanged(int mode, struct ModeParameter param, String topic) {
     
     // PM:N:T:D:S:P:U:A - параметры режима N указанные параметры
     //    N - номер режима - 2..MAX_EFFECT
@@ -148,5 +148,7 @@ void NotifyModeChanged(int mode, struct ModeParameter param) {
               (mode == ledMode ? "1" : "0");
     }
     Serial.println("Режим: " + data); 
-    if (client.connected()) client.publish(TOPIC_MODE_PM, data);
+
+    String sTopic = topic == "EDT" ? TOPIC_MODE_EDT : TOPIC_MODE_PM;
+    if (client.connected()) client.publish(sTopic, data);
 }
