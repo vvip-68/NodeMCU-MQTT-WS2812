@@ -322,6 +322,10 @@ void loop() {
       queueLength--;
       fromMQTT = true;
       processCommand(command);
+
+      // Выполнять цикл пока не исчерпается очередь команд от сервера
+      check_time = 0;
+      return;
     }
     
     // Есть ли поступившие из монитора порта команды?
