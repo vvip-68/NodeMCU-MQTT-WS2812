@@ -122,4 +122,22 @@
 
     topic: led/mode/set  value: PM:22:60:50:4:0:1:1     
 
+## Управление через Android приложения
 
+Гирлянда может управляться со смартфона через любой MQTT-клиент, путем отправки команд на сервер в нужные топики.
+В качестве примера, выбрана программа [Lazy MQTT](https://play.google.com/store/apps/details?id=org.mpru.a2), обладающая неплохими возможностями настройки интерфейса.
+
+  [Платная версия](https://play.google.com/store/apps/details?id=org.mpru.a2) (без рекламы) на Google Play  
+  [Бесплатная версия](https://play.google.com/store/apps/details?id=org.mpru.a2.free) на Google Play  
+  [Форум](http://4pda.ru/forum/index.php?showtopic=892943) программы на 4PDA
+
+### Скриншоты программы
+  ![screenshot1](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/LazyMQTT_screen_1s.jpg)
+  ![screenshot2](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/LazyMQTT_screen_2s.jpg) 
+  ![screenshot3](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/LazyMQTT_screen_3s.jpg) 
+  ![screenshot4](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/LazyMQTT_screen_4s.jpg) 
+  ![screenshot5](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/LazyMQTT_screen_5s.jpg)
+  
+### Настройка программы
+
+После того, как программа установлена на смартфоне, в ней открывается демонстрационный режим - пример управления умным домом от автора программы.
