@@ -296,23 +296,24 @@ void processCommand(String data) {
 
   if (cmd == "EDT") {
 
-    String mode =  getValue(data, ':', 1);
-    int iMode = mode.toInt();    
-    bool isSpecMode = isSpecialMode(iMode);
-    
-    if (!isSpecMode && (iMode < 2 || iMode > MAX_EFFECT)) {    
-      NotifyError("Неверный режим: " + String(iMode));
-      return;
-    }
+    if (cnt == 2) {
+      String mode =  getValue(data, ':', 1);
+      int iMode = mode.toInt();    
+      bool isSpecMode = isSpecialMode(iMode);
 
-    if (isSpecMode) {    
-      NotifyError("Изменение настроек " + String(iMode) + " не поддерживается");
-    }
-
-    else if (cnt == 2) {
-      ModeParameter param = mode_params[iMode];
-      NotifyModeChanged(iMode, param, "EDT");
-
+      if (!isSpecMode && (iMode < 2 || iMode > MAX_EFFECT)) {    
+        NotifyError("Неверный режим: " + String(iMode));
+        return;
+      }
+  
+      if (isSpecMode) {    
+        NotifyError("Изменение настроек " + String(iMode) + " не поддерживается");
+      }
+  
+      else {
+        ModeParameter param = mode_params[iMode];
+        NotifyModeChanged(iMode, param, "EDT");
+      }
     } else {
       NotifyError("Неверные параметры: ожидается: EDT:N; получено: " + data);
     }
