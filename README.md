@@ -140,4 +140,27 @@
   
 ### Настройка программы
 
-После того, как программа установлена на смартфоне, в ней открывается демонстрационный режим - пример управления умным домом от автора программы.
+После того, как программа установлена на смартфоне, в ней открывается демонстрационный режим - пример управления умным домом от автора программы. 
+* Шаг 1. Скачайте файл настроек 'Lazy MQTT-настройки.txt' на телефон.
+* Шаг 2. Откройте файл каким-нибудь редактором, выделите все содержимое файла настроек и скопируйте его в буфер обмена.
+* Шаг 3. Откройте на телефоне программу Lazy MQTT, перейдите в меню программы, выберите пункт "Установки".
+* Шаг 4. В пункте "Установки" выберите раздел "Слот настроек". Выберите слот "1". Вернитесь в меню на уровень выше.
+* Шаг 5. Выберите пункт "Настройки", "Импорт из буфера". Подтвердите выполнение операции. Программа управления гирляндой загружена в телефон.
+* Шаг 6. В меню программы выберите пункт "Соединения", выберите соединение "Гирлянда" и введите данные в поля аутентификации пользователя на вашем сервере MQTT.
+
+Программа готова к управлению гирляндой.
+
+  ![01](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/01.jpg)
+  ![02](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/02.jpg)
+  ![03](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/03.jpg)
+  ![04](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/04.jpg)
+  ![05](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/05.jpg)
+  ![06](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/06.jpg)
+  ![07](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/07.jpg)
+  ![08](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/08.jpg)
+  ![09](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/09.jpg)
+  ![10](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/10.jpg)
+  ![11](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/11.jpg)
+  ![12](https://github.com/vvip-68/NodeMCU-MQTT-WS2812/raw/master/images/steps/12.jpg)
+
+
