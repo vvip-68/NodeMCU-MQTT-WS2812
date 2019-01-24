@@ -1,20 +1,20 @@
-/*  
-  Скетч создан на основе проекта Alex Gyver WS2812_FX 
-  https://github.com/AlexGyver/WS2812_FX
-
-  Доработан vvip: поддержка WiFi (NodeMCU v3), управление через MQTT, 
-  хранение параметров режимов в EEPROM.
-  Автоматическое переключение режимов - отправляем номер режима 1000
-
-  v1.01 - изменен формат топиков и сообщений для управления через MQTT для совместимости
-          с управляющей программой Android - Lazy MQTT 
-          https://play.google.com/store/apps/details?id=org.mpru.a2.free
-*/
-
-#include <PubSubClient.h>     // библиотека для работы с MQTT
 #include <ESP8266WiFi.h>      // библиотека для работы с ESP266 WiFi
+#include <PubSubClient.h>     // библиотека для работы с MQTT
 #include <EEPROM.h>           // библиотека для работы с постоянной памятью устройства
 #include "FastLED.h"          // библиотека для работы с лентой
+
+//  Скетч создан на основе проекта Alex Gyver WS2812_FX 
+//  https://github.com/AlexGyver/WS2812_FX
+//
+//  Доработан vvip: поддержка WiFi (NodeMCU v3), управление через MQTT, 
+//  хранение параметров режимов в EEPROM.
+//  Автоматическое переключение режимов - отправляем номер режима 1000
+//  
+//  v1.00 - начальная версия. Управление гирляндой с консоли Монитора порта.
+//  v1.01 - изменен формат топиков и сообщений для управления через MQTT для совместимости
+//          с управляющей программой Android - Lazy MQTT 
+//          https://play.google.com/store/apps/details?id=org.mpru.a2.free
+//
 
 #define LED_COUNT 330         // число светодиодов в кольце/ленте
 #define LED_DT D4             // пин, куда подключен DIN ленты
