@@ -405,7 +405,7 @@ void loop() {
   }
 
   // Если режим - случайная смена и подошло время смены режима - переключить
-  if (randomModeOn && ledMode == newMode) {
+  if (randomModeOn && (ledMode == newMode || ledMode == 0)) {
     if (millis() - last_change > change_time) {
       newMode = getRandomMode();
       last_change = millis();
