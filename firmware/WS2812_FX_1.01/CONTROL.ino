@@ -1,7 +1,7 @@
 // ----------------- ВСПОМОГАТЕЛЬНОЕ ------------------
 
 bool isSpecialMode(int mode) {
-  return mode == 999 || mode == 1000 || mode >= 99 && mode <= 107;
+  return (mode == 999 || mode == 1000 || (mode >= 99 && mode <= 107));
 }
 
 int getRandomMode() {
