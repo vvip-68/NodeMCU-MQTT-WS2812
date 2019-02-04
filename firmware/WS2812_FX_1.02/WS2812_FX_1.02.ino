@@ -308,7 +308,7 @@ void loop() {
   }
   
   // подключаемся к MQTT серверу
-  if (WiFi.status() == WL_CONNECTED) {
+  if (connected) {
     if (!client.connected()) {
       Serial.println("Подключаемся к MQTT-серверу...");
       if (client.connect(MQTT::Connect("LedStripClient").set_auth(mqtt_user, mqtt_pass))) {
