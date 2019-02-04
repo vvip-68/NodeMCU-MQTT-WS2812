@@ -264,6 +264,7 @@ void setup() {
   EEPROM.begin(512);
 
   WiFi.begin(ssid, pass);
+  delay(100);
   udp.begin(localPort);
 
   loadSettings();
