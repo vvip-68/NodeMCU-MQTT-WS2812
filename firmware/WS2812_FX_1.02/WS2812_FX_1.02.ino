@@ -263,10 +263,8 @@ void setup() {
 
   EEPROM.begin(512);
 
-  /* Explicitly set the ESP8266 to be a WiFi-client, otherwise, it by default,
-     would try to act as both a client and an access-point and could cause
-     network-issues with your other WiFi-devices on your WiFi-network. */
-  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, pass);
+  udp.begin(localPort);
 
   loadSettings();
   rebuildFavorites();
@@ -294,7 +292,6 @@ void loop() {
       Serial.print(ssid);
       Serial.println("...");
   
-      WiFi.begin(ssid, pass);
       printed_1 = true;
       printed_2 = false;
     }
@@ -305,9 +302,7 @@ void loop() {
     Serial.print("WiFi подключен. IP адрес: ");
     Serial.println(WiFi.localIP());
     Serial.printf("UDP-сервер на порту %d\n", localPort);
-    
-    udp.begin(localPort);
-    
+        
     printed_1 = false;
     printed_2 = true;
   }
