@@ -201,8 +201,11 @@ void callback(const MQTT::Publish& pub) {
 
 void setup()
 {
+
   Serial.begin(115200);
   delay(100);
+
+  Serial.println(F("\n\nWS2812_FX WiFi-MQTT v.1.00.2019.1025"));
 
   randomSeed(analogRead(0));
 
