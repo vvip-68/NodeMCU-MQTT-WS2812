@@ -37,6 +37,12 @@
 
 #define TRUE_RANDOM
 
+// Comment out the next line if you do not want to have random durations in random mode
+#define RANDOMIZE_DURATION
+#define RANDOM_DURATION_MIN 30000
+#define RANDOM_DURATION_MAX 90000
+#define RANDOM_DURATION_STEP 5000
+
 // Раскомментируйте следующую строку, если впараметры подключения к WiFi и MQTT серверу задаются
 // явным образом в блоке ниже. Если строка закомментирована - блок определения параметров подключения в
 // точно таком же формате вынесен в отдельный файл 'settings.h' и переменные при сборке скетча будут браться из него.
