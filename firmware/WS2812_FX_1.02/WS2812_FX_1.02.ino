@@ -35,6 +35,8 @@
 #define TOPIC_MODE_LST "led/mode/lst"   // Топик - отправка уведомления о полном списке режимов
 #define TOPIC_MODE_EDT "led/mode/edt"   // Топик - отправка параметров режима для их редактирования в Android-программе
 
+#define TRUE_RANDOM
+
 // Раскомментируйте следующую строку, если впараметры подключения к WiFi и MQTT серверу задаются
 // явным образом в блоке ниже. Если строка закомментирована - блок определения параметров подключения в
 // точно таком же формате вынесен в отдельный файл 'settings.h' и переменные при сборке скетча будут браться из него.
@@ -262,7 +264,13 @@ void setup() {
 
   Serial.println(F("\n\nWS2812_FX WiFi-MQTT v.1.02.2019.1025"));
 
-  randomSeed(analogRead(0));
+#ifdef TRUE_RANDOM
+  unsigned long seed = (int)RANDOM_REG32;
+#else
+  unsigned long seed = (int)(analogRead(0) ^ micros());
+#endif
+  NotifyInfo("seed:" + String(seed));
+  randomSeed(seed);
 
   EEPROM.begin(512);
 
