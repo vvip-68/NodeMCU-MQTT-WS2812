@@ -24,6 +24,10 @@
 #define TOPIC_MODE_NFO "led/mode/nfo"   // Топик - отправка уведомления о выполнении
 #define TOPIC_MODE_ERR "led/mode/err"   // Топик - отправка уведомления об ошибке команды
 
+// Comment the next line to stop useing hardware randomizer for initial random seed. 
+// So reading analog input 0 + microseconds will be used instead
+#define TRUE_RANDOM
+
 // Раскомментируйте следующую строцку, если вы задаете параметры подключения к WiFi и MQTT серверу
 // явным образом в блоке ниже. Если строка закомментирована - блок определения параметров подключения в
 // точно таком же формате вынесен в отдельный файл 'settings.h' и переменные при сборке скетча будут браться из него.
@@ -207,7 +211,12 @@ void setup()
 
   Serial.println(F("\n\nWS2812_FX WiFi-MQTT v.1.00.2019.1025"));
 
-  randomSeed(analogRead(0));
+#ifdef TRUE_RANDOM
+  unsigned long seed = (int)RANDOM_REG32;
+#else
+  unsigned long seed = (int)(analogRead(0) ^ micros());
+#endif
+  randomSeed(seed);
 
   EEPROM.begin(512);
 
