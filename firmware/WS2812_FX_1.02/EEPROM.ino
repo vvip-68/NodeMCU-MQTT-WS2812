@@ -72,7 +72,10 @@ void loadSettings() {
   }
 
   // После первой инициализации значений - сохранить их принудительно
-  if (!isInitialized) saveSettings();
+  if (!isInitialized){
+      saveSettings();
+      savePowerSettings();
+  }
 }
 
 void saveSettings() {
