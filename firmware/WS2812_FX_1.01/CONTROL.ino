@@ -8,6 +8,11 @@ int getRandomMode() {
   return fav_modes[random(0, fav_modes_num - 1)];        // получаем новый случайный номер следующего режима
 }
 
+int getRandomDuration(int iMin, int iMax, int iStep = 5000) {
+  int steps = 1 + round((iMax - iMin) / iStep);
+  return iMin + iStep * random(0, steps);
+}
+
 void resetModeVariables() {
   thisdelay = 20;
   thisstep = 0;
@@ -89,10 +94,14 @@ void changeMode(int newmode) {
   // Установить параметры для выбранного режима  
   if (newmode >= 2 && newmode <= MAX_EFFECT) {    
     param = mode_params[newmode];
-    change_time = param.duration * 1000;
     thisdelay = param.delay;
     thisseg = param.segment;
     thisstep = param.step;
+    #ifdef RANDOMIZE_DURATION
+      if(randomModeOn) change_time = getRandomDuration(RANDOM_DURATION_MIN, RANDOM_DURATION_MAX, RANDOM_DURATION_STEP);
+    #else
+      change_time = param.duration * 1000;
+    #endif  
   }
 
   bool isSpecMode = isSpecialMode(newmode);

@@ -14,6 +14,8 @@
 #include <EEPROM.h>           // библиотека для работы с постоянной памятью устройства
 #include "FastLED.h"          // библиотека для работы с лентой
 
+#define FIRMWARE_VER F("\n\nWS2812_FX WiFi-MQTT v.1.00.2019.1028")
+
 #define LED_COUNT 330         // число светодиодов в кольце/ленте
 #define LED_DT D4             // пин, куда подключен DIN ленты
 #define MAX_EFFECT 42         // эффекты от 2 до MAX_EFFECT; 
@@ -27,6 +29,12 @@
 // Comment the next line to stop useing hardware randomizer for initial random seed. 
 // So reading analog input 0 + microseconds will be used instead
 #define TRUE_RANDOM
+
+// You can comment it out to restore original logic
+#define RANDOMIZE_DURATION
+#define RANDOM_DURATION_MIN 30000
+#define RANDOM_DURATION_MAX 90000
+#define RANDOM_DURATION_STEP 5000
 
 // Раскомментируйте следующую строцку, если вы задаете параметры подключения к WiFi и MQTT серверу
 // явным образом в блоке ниже. Если строка закомментирована - блок определения параметров подключения в
@@ -209,7 +217,7 @@ void setup()
   Serial.begin(115200);
   delay(100);
 
-  Serial.println(F("\n\nWS2812_FX WiFi-MQTT v.1.00.2019.1025"));
+  Serial.println(FIRMWARE_VER);
 
 #ifdef TRUE_RANDOM
   unsigned long seed = (int)RANDOM_REG32;
