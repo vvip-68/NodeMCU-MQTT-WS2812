@@ -24,6 +24,12 @@
 #define TOPIC_MODE_NFO "led/mode/nfo"   // Топик - отправка уведомления о выполнении
 #define TOPIC_MODE_ERR "led/mode/err"   // Топик - отправка уведомления об ошибке команды
 
+// Uncomment the next line if you'd like to randomize durations in random mode
+// #define RANDOMIZE_DURATION
+#define RANDOM_DURATION_MIN 30000
+#define RANDOM_DURATION_MAX 90000
+#define RANDOM_DURATION_STEP 5000
+
 // Раскомментируйте следующую строцку, если вы задаете параметры подключения к WiFi и MQTT серверу
 // явным образом в блоке ниже. Если строка закомментирована - блок определения параметров подключения в
 // точно таком же формате вынесен в отдельный файл 'settings.h' и переменные при сборке скетча будут браться из него.
