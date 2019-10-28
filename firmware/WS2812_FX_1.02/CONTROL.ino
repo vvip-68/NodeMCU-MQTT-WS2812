@@ -98,7 +98,7 @@ void changeMode(int newmode) {
     thisseg = param.segment;
     thisstep = param.step;
     #ifdef RANDOMIZE_DURATION
-      if(randomModeOn) change_time = getRandomDuration(RANDOM_DURATION_MIN, RANDOM_DURATION_MAX, RANDOM_DURATION_STEP);
+      change_time = randomModeOn ? getRandomDuration(RANDOM_DURATION_MIN, RANDOM_DURATION_MAX, RANDOM_DURATION_STEP) : (param.duration * 1000);
     #else
       change_time = param.duration * 1000;
     #endif  
