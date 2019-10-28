@@ -8,6 +8,11 @@ int getRandomMode() {
   return fav_modes[random(0, fav_modes_num - 1)];        // получаем новый случайный номер следующего режима
 }
 
+int getRandomDuration(int iMin, int iMax, int iStep = 5000){
+  int steps = 1 + round((iMax - iMin) / iStep);
+  return iMin + iStep * random(0, steps);
+}
+
 void resetModeVariables() {
   thisdelay = 20;
   thisstep = 0;
