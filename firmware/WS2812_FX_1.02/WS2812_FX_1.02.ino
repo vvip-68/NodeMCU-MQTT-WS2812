@@ -35,6 +35,12 @@
 #define TOPIC_MODE_LST "led/mode/lst"   // Топик - отправка уведомления о полном списке режимов
 #define TOPIC_MODE_EDT "led/mode/edt"   // Топик - отправка параметров режима для их редактирования в Android-программе
 
+// Uncomment the next line if you'd like to randomize durations in random mode
+// #define RANDOMIZE_DURATION
+#define RANDOM_DURATION_MIN 30000
+#define RANDOM_DURATION_MAX 90000
+#define RANDOM_DURATION_STEP 5000
+
 // Раскомментируйте следующую строку, если впараметры подключения к WiFi и MQTT серверу задаются
 // явным образом в блоке ниже. Если строка закомментирована - блок определения параметров подключения в
 // точно таком же формате вынесен в отдельный файл 'settings.h' и переменные при сборке скетча будут браться из него.
