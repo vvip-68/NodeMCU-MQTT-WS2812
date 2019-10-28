@@ -98,6 +98,9 @@ void changeMode(int newmode) {
     thisdelay = param.delay;
     thisseg = param.segment;
     thisstep = param.step;
+#ifdef RANDOMIZE_DURATION
+    if(randomModeOn) change_time = getRandomDuration(RANDOM_DURATION_MIN, RANDOM_DURATION_MAX, RANDOM_DURATION_STEP);
+#endif
   }
 
   bool isSpecMode = isSpecialMode(newmode);
