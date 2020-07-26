@@ -22,7 +22,7 @@
 //          - Randomize mode's durations in random mode 
 //          - Save default power settings on first initilaization  
 
-#define FIRMWARE_VER F("\n\nWS2812_FX WiFi-MQTT v.1.02.2019.1028")
+#define FIRMWARE_VER F("\n\nWS2812_FX WiFi-MQTT v.1.02.2020.0726")
 
 #define LED_COUNT 330         // число светодиодов в кольце/ленте
 #define LED_DT D4             // пин, куда подключен DIN ленты
