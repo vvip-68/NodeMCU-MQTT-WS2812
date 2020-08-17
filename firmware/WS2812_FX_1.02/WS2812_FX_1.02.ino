@@ -1,8 +1,10 @@
 #include <PubSubClient.h>     // библиотека для работы с MQTT
 #include <ESP8266WiFi.h>      // библиотека для работы с ESP266 WiFi
+#include <ESP8266mDNS.h>      // Для обнаружения платы при прошивке "по воздуху"
+#include <ArduinoOTA.h>       // Прошивальщик "по воздуху"
 #include <EEPROM.h>           // библиотека для работы с постоянной памятью устройства
-#include "FastLED.h"          // библиотека для работы с лентой
 #include <WiFiUdp.h>          // библиотека для работы с UDP-сокетами через WiFi
+#include "FastLED.h"          // библиотека для работы с лентой
 
 //  Скетч создан на основе проекта Alex Gyver WS2812_FX 
 //  https://github.com/AlexGyver/WS2812_FX
@@ -17,12 +19,12 @@
 //          https://play.google.com/store/apps/details?id=org.mpru.a2.free
 //  v1.02 - поддержка управления гирляндой через WiFi UDP socket,
 //          прямым подключением к гирлянде по IP:port из управляющей программы на Android     
-//          28.10.2019 added improvements from user fifonik:
-//          - Better randomization: use hardware randomizer or at analogRead(0) with also includes micro seconds       
-//          - Randomize mode's durations in random mode 
-//          - Save default power settings on first initilaization  
+//          - 28.10.2019 added improvements from user fifonik:
+//            - Better randomization: use hardware randomizer or at analogRead(0) with also includes micro seconds       
+//            - Randomize mode's durations in random mode 
+//            - Save default power settings on first initilaization  
 
-#define FIRMWARE_VER F("\n\nWS2812_FX WiFi-MQTT v.1.02.2020.0726")
+#define FIRMWARE_VER F("\n\nWS2812_FX WiFi-MQTT v.1.02.2020.00817")
 
 #define LED_COUNT 330         // число светодиодов в кольце/ленте
 #define LED_DT D4             // пин, куда подключен DIN ленты
@@ -153,7 +155,9 @@ WiFiClient wclient;
 PubSubClient client(wclient, mqtt_server, mqtt_port);
 
 WiFiUDP udp;
-unsigned int localPort = 2390;          // локальный порт прослушивания входящих UDP пакетов
+//byte IP_STA[] = {192, 168, 0, 116}; // Статический адрес в локальной сети WiFi - использовать указанный
+byte IP_STA[] = {0, 0, 0, 0};         // Статический адрес в локальной сети WiFi не задан - использовать автоматический
+unsigned int localPort = 2390;        // локальный порт прослушивания входящих UDP пакетов
 
 #define UDP_CONNECTION_TIMEOUT 600000   // Таймаут связи с клиентом. Если 600 сек не было связи - забывать о клиенте 
 #define MAX_UDP_CLIENTS 4               // Максимальное количество обслуживаемых UDP-клиентов
@@ -273,10 +277,18 @@ void callback(const MQTT::Publish& pub) {
 
 void setup() {
 
-  Serial.begin(115200);
-  delay(100);
+  ESP.wdtEnable(WDTO_8S);
+  EEPROM.begin(512);
 
+  Serial.begin(115200);
+  delay(300);
+
+  Serial.println();
+  Serial.println();
   Serial.println(FIRMWARE_VER);
+  Serial.println();
+
+  loadSettings();
 
 #ifdef TRUE_RANDOM
   unsigned long seed = (int)RANDOM_REG32;
@@ -285,13 +297,51 @@ void setup() {
 #endif
   randomSeed(seed);
 
-  EEPROM.begin(512);
+  LEDS.addLeds<WS2812, LED_DT, GRB>(leds, LED_COUNT).setCorrection( TypicalLEDStrip );  // настрйоки для нашей ленты (ленты на WS2811, WS2812, WS2812B)
+  // FastLED.setMaxPowerInVoltsAndMilliamps(5, CURRENT_LIMIT);
+  FastLED.clear();
+  LEDS.show();
 
-  WiFi.begin(ssid, pass);
-  delay(100);
+  startWiFi();  
+  
+  // Port defaults to 8266
+  // ArduinoOTA.setPort(8266);
+ 
+  // Hostname defaults to esp8266-[ChipID]
+  ArduinoOTA.setHostname("Lights-WiFi");
+ 
+  // No authentication by default
+  // ArduinoOTA.setPassword((const char *)"123");
+ 
+  ArduinoOTA.onStart([]() {
+   String type;
+    if (ArduinoOTA.getCommand() == U_FLASH)
+      type = F("скетча...");
+    else // U_SPIFFS
+      type = F("файловой системы SPIFFS...");
+    // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
+    Serial.print(F("Начато обносление "));    
+    Serial.println(type);    
+  });
+  ArduinoOTA.onEnd([]() {
+    Serial.println(F("\nОбновление завершено"));
+  });
+  ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+    Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
+  });
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.print(F("Ошибка: "));
+    Serial.println(error);
+    if      (error == OTA_AUTH_ERROR)    Serial.println(F("Неверное имя/пароль сети"));
+    else if (error == OTA_BEGIN_ERROR)   Serial.println(F("Не удалось запустить обновление"));
+    else if (error == OTA_CONNECT_ERROR) Serial.println(F("Не удалось установить соединение"));
+    else if (error == OTA_RECEIVE_ERROR) Serial.println(F("Не удалось получить данные"));
+    else if (error == OTA_END_ERROR)     Serial.println(F("Ошибка завершения сессии"));
+  });
+  ArduinoOTA.begin();
+
   udp.begin(localPort);
 
-  loadSettings();
   rebuildFavorites();
   
   LEDS.setBrightness(max_bright);  // задать максимальную яркость
@@ -307,30 +357,6 @@ void setup() {
 }
 
 void loop() {
-
-  // Проверяем подключение к WiFi, при необходимости подключаемся к сети
-  connected = WiFi.status() == WL_CONNECTED; 
-  if (!connected) {
-    if (!printed_1)
-    {      
-      Serial.print("Connecting to ");
-      Serial.print(ssid);
-      Serial.println("...");
-  
-      printed_1 = true;
-      printed_2 = false;
-    }
-  }
-
-  // Сразу после подключения - печатаем результат подключения
-  if (connected && !printed_2) {
-    Serial.print("WiFi подключен. IP адрес: ");
-    Serial.println(WiFi.localIP());
-    Serial.printf("UDP-сервер на порту %d\n", localPort);
-        
-    printed_1 = false;
-    printed_2 = true;
-  }
   
   // подключаемся к MQTT серверу
   if (connected) {
@@ -345,6 +371,7 @@ void loop() {
         Serial.println("Не удалось подключиться к MQTT-серверу.");
       }
     }
+    ArduinoOTA.handle();
   }
 
   // Проверка наличия команд - раз в 250 мсек. 
@@ -506,4 +533,46 @@ void loop() {
     case 42: FourColorsLight(); break;            // перелив огоньков R-G-B-Y (совсем медленно)
     case 999: break;                              // пазуа
   }
+}
+
+void startWiFi() { 
+  
+  WiFi.disconnect(true);
+  connected = false;
+  
+  delay(10);               // Иначе получаем Core 1 panic'ed (Cache disabled but cached memory region accessed)
+  WiFi.mode(WIFI_STA);
+ 
+  // Пытаемся соединиться с роутером в сети
+  if (strlen(ssid) > 0) {
+    Serial.print(F("\nПодключение к "));
+    Serial.print(ssid);
+
+    if (IP_STA[0] + IP_STA[1] + IP_STA[2] + IP_STA[3] > 0) {
+      WiFi.config(IPAddress(IP_STA[0], IP_STA[1], IP_STA[2], IP_STA[3]),  // 192.168.0.106
+                  IPAddress(IP_STA[0], IP_STA[1], IP_STA[2], 1),          // 192.168.0.1
+                  IPAddress(255, 255, 255, 0),                            // Mask
+                  IPAddress(IP_STA[0], IP_STA[1], IP_STA[2], 1),          // DNS1 192.168.0.1
+                  IPAddress(8, 8, 8, 8));                                 // DNS2 8.8.8.8                  
+    }              
+    WiFi.begin(ssid, pass);
+  
+    // Проверка соединения (таймаут 5 секунд)
+    for (int j = 0; j < 10; j++ ) {
+      connected = WiFi.status() == WL_CONNECTED; 
+      if (connected) {
+        // Подключение установлено
+        Serial.println();
+        Serial.print(F("WiFi подключен. IP адрес: "));
+        Serial.println(WiFi.localIP());
+        break;
+      }
+      delay(500);
+      Serial.print(".");
+    }
+    Serial.println();
+
+    if (!connected)
+      Serial.println(F("Не удалось подключиться к сети WiFi."));
+  }  
 }
