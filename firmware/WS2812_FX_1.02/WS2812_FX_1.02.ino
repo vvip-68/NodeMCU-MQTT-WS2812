@@ -347,8 +347,8 @@ void setup() {
   LEDS.setBrightness(max_bright);  // задать максимальную яркость
 
   LEDS.addLeds<WS2812, LED_DT, GRB>(leds, LED_COUNT);  // настрйоки для нашей ленты (ленты на WS2811, WS2812, WS2812B)
-  setAll(0, 0, 0);          // погасить все светодиоды
-  LEDS.show();              // отослать команду
+  LEDS.clear();
+  LEDS.show();
 
   ledMode = 0;
   prepareChangeMode(newMode);
