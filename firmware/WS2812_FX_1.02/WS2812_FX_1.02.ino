@@ -24,7 +24,7 @@
 //            - Randomize mode's durations in random mode 
 //            - Save default power settings on first initilaization  
 
-#define FIRMWARE_VER F("\n\nWS2812_FX WiFi-MQTT v.1.02.2020.00817")
+#define FIRMWARE_VER F("\n\nWS2812_FX WiFi-MQTT v.1.02.2020.0917")
 
 #define LED_COUNT 330         // число светодиодов в кольце/ленте
 #define LED_DT D4             // пин, куда подключен DIN ленты
@@ -557,7 +557,10 @@ void startWiFi() {
     }              
     WiFi.begin(ssid, pass);
   
-    // Проверка соединения (таймаут 5 секунд)
+    // Проверка соединения (таймаут 180 секунд)
+    // Такой таймаут нужен в случае, когда отключают электричество, при последующем включении устройство стартует быстрее
+    // чем роутер успеет загрузитиься и создаать сеть. При коротком таймауте устройство не найдет сеть и создаст точку доступа,
+    // то есть не сможет управляться через MQTT, n/r нет сети - нет подключения к серверу
     for (int j = 0; j < 10; j++ ) {
       connected = WiFi.status() == WL_CONNECTED; 
       if (connected) {
