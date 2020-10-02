@@ -1,21 +1,22 @@
+
 void NotifyInfo(String message) {
   Serial.println(message); 
   String data = "NFO: " + message;
-  if (client.connected()) client.publish(TOPIC_MODE_NFO, data);
+  if (client.connected()) client.publish(TOPIC_MODE_NFO, data.c_str());
   sendToAllUDP(data);
 }
 
 void NotifyError(String message) {
   Serial.println(message); 
   String data = "ERR: " + message;
-  if (client.connected()) client.publish(TOPIC_MODE_ERR, data);
+  if (client.connected()) client.publish(TOPIC_MODE_ERR, data.c_str());
   sendToAllUDP(data);
 }
 
 void NotifyRandomModeChanged() {
   String autoMode = randomModeOn ? "ON" : "OFF";
   if (client.connected()) 
-    client.publish(TOPIC_MODE_RND, "RND:" + autoMode);
+    client.publish(TOPIC_MODE_RND, String("RND:" + autoMode).c_str());
   sendToAllUDP("RND:" + autoMode);
   if (randomModeOn)
     NotifyInfo("Автосмена режимов: включено");
@@ -31,7 +32,7 @@ void NotifyFavorites() {
   
   data = data.substring(0, data.length() - 1);
   Serial.println("Выбраны режимы: [" + data + "]");
-  if (client.connected()) client.publish(TOPIC_MODE_FAV, "FAV:" + data);
+  if (client.connected()) client.publish(TOPIC_MODE_FAV, String("FAV:" + data).c_str());
   sendToAllUDP("FAV:" + data);
 }
 
@@ -52,22 +53,23 @@ void NotifyOnConnect() {
   
   // Текущее состояние питания
   if (client.connected())     
-    client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:" + power).set_qos(1));
+    client.publish(TOPIC_MODE_PWR, String("PWR:" + power).c_str());
   sendToAllUDP("PWR:" + power);
 
   // Текущая яркость
-  if (client.connected())     
-    client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_qos(1));
+  if (client.connected()) {    
+    client.publish(TOPIC_MODE_BR, String("BR:" + String(max_bright)).c_str()); 
+  }
   sendToAllUDP("BR:" + String(max_bright));
 
   // Текущая настройка цвета пользователя
   if (client.connected())     
-    client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + color).set_qos(1));
+    client.publish(TOPIC_MODE_RGB, String("RGB:" + color).c_str());
   sendToAllUDP("RGB:" + color);
 
   // Текущаее состояние автосмены режима
   if (client.connected())     
-    client.publish(MQTT::Publish(TOPIC_MODE_RND, "RND:" + autoMode).set_qos(1));
+    client.publish(TOPIC_MODE_RND, String("RND:" + autoMode).c_str());
   sendToAllUDP("RND:" + autoMode);
 
   // Список любимых режимов
@@ -128,7 +130,7 @@ void NotifyKnownModes() {
     "41[Гирлянда (медленно)]:" 
     "42[Гирлянда (плавно)]";
 
-  if (client.connected()) client.publish(TOPIC_MODE_LST, "LST:" + list);  
+  if (client.connected()) client.publish(TOPIC_MODE_LST, String("LST:" + list).c_str());  
   sendToAllUDP("LST:" + list);
 
   list.replace(":","\n");
@@ -161,6 +163,6 @@ void NotifyModeChanged(int mode, struct ModeParameter param, String topic) {
     Serial.println("Режим: " + data); 
 
     String sTopic = topic == "EDT" ? TOPIC_MODE_EDT : TOPIC_MODE_PM;
-    if (client.connected()) client.publish(sTopic, data);
+    if (client.connected()) client.publish(sTopic.c_str(), data.c_str());
     sendToAllUDP(data);
 }

@@ -204,8 +204,9 @@ void processCommand(String data) {
     // Запрос текущего значения установленной яркости
     if (cnt == 1) {    
       Serial.println("Яркость: " + String(max_bright));  
-      if (client.connected()) 
-        client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_qos(1));
+      if (client.connected()) { 
+        client.publish(TOPIC_MODE_BR, String("BR:" + String(max_bright)).c_str());
+      }
       sendToAllUDP("BR:" + String(max_bright));
     } else 
 
@@ -226,8 +227,9 @@ void processCommand(String data) {
       }
 
       // Отправить установленное значение яркости, чтобы клиенты могли его обновить у себя
-      if (client.connected()) 
-        client.publish(MQTT::Publish(TOPIC_MODE_BR, "BR:" + String(max_bright)).set_qos(1));
+      if (client.connected()) {
+        client.publish(TOPIC_MODE_BR, String("BR:" + String(max_bright)).c_str());
+      }
         
       sendToAllUDP("BR:" + String(max_bright));
     } else {      
@@ -412,7 +414,7 @@ void processCommand(String data) {
       
       Serial.println("Задан цвет RGB:" + sColor); 
       if (client.connected()) 
-        client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + sColor).set_qos(1));
+        client.publish(TOPIC_MODE_RGB, String("RGB:" + sColor).c_str());
       sendToAllUDP("RGB:" + sColor);  
       return;
     }
@@ -444,7 +446,7 @@ void processCommand(String data) {
     // Отправить установленное значение цвета, чтобы клиенты могли его обновить у себя
     String sColor = String(userColor.r) + ":" + String(userColor.g) + ":" + String(userColor.b);      
     if (client.connected()) {
-      client.publish(MQTT::Publish(TOPIC_MODE_RGB, "RGB:" + sColor).set_qos(1));
+      client.publish(TOPIC_MODE_RGB, String("RGB:" + sColor).c_str());
     }
     sendToAllUDP("RGB:" + sColor);  
 
@@ -467,7 +469,7 @@ void processCommand(String data) {
       power_ru = powerOn ? "ВКЛ" : "ВЫКЛ";
       Serial.println("Статус питания: " + power_ru); 
       if (client.connected()) 
-        client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:" + power).set_qos(1));
+        client.publish(TOPIC_MODE_PWR, String("PWR:" + power).c_str());
       sendToAllUDP("PWR:" + power);  
       return;
     }
@@ -487,8 +489,11 @@ void processCommand(String data) {
 
         // Отправить установленное значение вкл/выкл, чтобы клиенты могли его обновить у себя
         if (client.connected()) 
-          client.publish(MQTT::Publish(TOPIC_MODE_PWR, "PWR:OFF").set_qos(1));
+          client.publish(TOPIC_MODE_PWR, "PWR:OFF");
         sendToAllUDP("PWR:OFF");
+
+        // На управляющий MOSFET'ом пин сигнал выключения
+        digitalWrite(POWER_PIN, POWER_OFF);
         return;   
       }
     
@@ -500,6 +505,9 @@ void processCommand(String data) {
         prepareChangeMode(newMode);
         randomModeOn = randomModeOnBeforePowerOff;
         savePowerSettings();
+
+        // На управляющий MOSFET'ом пин сигнал включения
+        digitalWrite(POWER_PIN, POWER_ON);
 
         // Отправить установленное значение и все значения как при аппаратном включении питания,
         // чтобы клиенты восстановили у себя состояние элементов управления
@@ -525,7 +533,7 @@ void processCommand(String data) {
         Serial.println("Автосмена режимов: выключено");  
       autoMode = randomModeOn ? "ON" : "OFF";
       if (client.connected())
-        client.publish(MQTT::Publish(TOPIC_MODE_RND, "RND:" + autoMode).set_qos(1));
+        client.publish(TOPIC_MODE_RND, String("RND:" + autoMode).c_str());
       sendToAllUDP("RND:" + autoMode);
       return;
     }

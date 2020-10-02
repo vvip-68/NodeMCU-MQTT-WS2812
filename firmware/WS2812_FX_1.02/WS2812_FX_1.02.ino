@@ -24,12 +24,16 @@
 //            - Randomize mode's durations in random mode 
 //            - Save default power settings on first initilaization  
 
-#define FIRMWARE_VER F("\n\nWS2812_FX WiFi-MQTT v.1.02.2020.0917")
+#define FIRMWARE_VER F("\n\nWS2812_FX WiFi-MQTT v.1.02.2020.1002")
 
 #define LED_COUNT 330         // число светодиодов в кольце/ленте
 #define LED_DT D4             // пин, куда подключен DIN ленты
+#define POWER_PIN D1          // D1 управляющий пин вкл/выкл матрицы через MOSFET; POWER_ON - HIGH, POWER_OFF - LOW
 #define MAX_EFFECT 42         // эффекты от 2 до MAX_EFFECT; 
 #define EEPROM_OK 0xAF        // Флаг, показывающий, что данные в EEPROM были сохранены 
+
+#define POWER_ON  HIGH        // Для включения питания матрицы (через MOSFET) подавать на пин POWER_PIN высокий уровень
+#define POWER_OFF LOW         // Для вЫключения питания матрицы (через MOSFET) подавать на пин POWER_PIN низкий уровень
 
 #define TOPIC_MODE_CMD "led/mode/cmd"   // Топик - получение команды управления
 #define TOPIC_MODE_NFO "led/mode/nfo"   // Топик - отправка информационных уведомлений
@@ -152,7 +156,7 @@ int userMode = 0;               // режим, использовавшиймя 
 bool powerOn = false;           // состояние ВКЛ/ВЫКЛ после плдключения питания
 
 WiFiClient wclient;
-PubSubClient client(wclient, mqtt_server, mqtt_port);
+PubSubClient client(wclient);
 
 WiFiUDP udp;
 //byte IP_STA[] = {192, 168, 0, 116}; // Статический адрес в локальной сети WiFi - использовать указанный
@@ -258,16 +262,16 @@ byte queueLength = 0;                // количество команд в о�
 
 // ------------------ MQTT CALLBACK -------------------
 
-void callback(const MQTT::Publish& pub) {
-
-  String topic = pub.topic();
-  String payload = pub.payload_string();
-
+void callback(char* topic, byte* payload, unsigned int length) {
   // проверяем из нужного ли нам топика пришли данные
-  if (topic == TOPIC_MODE_CMD) {
+  // Serial.println("topic='" + String(topic) + "'");
+  if (strcmp(topic,TOPIC_MODE_CMD) == 0) {
+    memset(udpBuffer, 0, UDP_TX_PACKET_MAX_SIZE);
+    memcpy(udpBuffer, payload, length);
+    // Serial.println("cmd='" + String(udpBuffer) + "'\n");
     if (queueLength < QSIZE) {
       queueLength++;
-      strcpy(cmdQueue[queueWriteIdx++], (const char*)(payload.c_str()));      
+      strcpy(cmdQueue[queueWriteIdx++], udpBuffer);      
       if (queueWriteIdx >= QSIZE) queueWriteIdx = 0;
     }
   }
@@ -297,12 +301,16 @@ void setup() {
 #endif
   randomSeed(seed);
 
+  pinMode(POWER_PIN, OUTPUT);
+
   LEDS.addLeds<WS2812, LED_DT, GRB>(leds, LED_COUNT).setCorrection( TypicalLEDStrip );  // настрйоки для нашей ленты (ленты на WS2811, WS2812, WS2812B)
   // FastLED.setMaxPowerInVoltsAndMilliamps(5, CURRENT_LIMIT);
   FastLED.clear();
   LEDS.show();
 
   startWiFi();  
+  client.setServer(mqtt_server, mqtt_port);
+  client.setCallback(callback);
   
   // Port defaults to 8266
   // ArduinoOTA.setPort(8266);
@@ -356,22 +364,43 @@ void setup() {
   delay(100);
 }
 
+bool conn_flag = false;  // Выполняется подключение к MQTT
+byte conn_cnt = 0;       // Счетчик попыток подключения для форматировния вывода
+unsigned long conn_last;
+
 void loop() {
   
   // подключаемся к MQTT серверу
   if (connected) {
     if (!client.connected()) {
-      Serial.println("Подключаемся к MQTT-серверу...");
-      if (client.connect(MQTT::Connect("LedStripClient").set_auth(mqtt_user, mqtt_pass))) {
-        Serial.println("Подключение к MQTT-серверу выполнено.");
-        client.set_callback(callback);
+      if (!conn_flag) {
+        Serial.print(F("Подключаемся к MQTT-серверу..."));
+        conn_cnt = 30;
+      }
+      if (client.connect("LedStripClient", mqtt_user, mqtt_pass)) {
+        Serial.println(F("\nПодключение к MQTT-серверу выполнено."));
         client.subscribe(TOPIC_MODE_CMD);
         NotifyOnConnect();    
-      } else {
-        Serial.println("Не удалось подключиться к MQTT-серверу.");
+        conn_flag = false;
+      } else {      
+       // Serial.println("Не удалось подключиться к MQTT-серверу.");
+        if (millis() - conn_last > 1000) {
+          conn_last = millis();
+          Serial.print(".");
+          conn_flag = true;
+          conn_cnt++;
+          if (conn_cnt == 80) {
+            conn_cnt = 0;
+            Serial.println();
+          }
+        }
       }
     }
     ArduinoOTA.handle();
+  }
+
+  if (client.connected()){
+    client.loop();      
   }
 
   // Проверка наличия команд - раз в 250 мсек. 
@@ -380,10 +409,6 @@ void loop() {
     check_time = millis();
     
     // Есть ли поступившие по каналу MQTT команды?
-    if (client.connected()){
-      client.loop();      
-    }
-
     if (queueLength > 0) {
       String command = String(cmdQueue[queueReadIdx++]);
       if (queueReadIdx >= QSIZE) queueReadIdx = 0;
@@ -477,7 +502,7 @@ void loop() {
     }
 
     if (randomModeOn) {
-       Serial.print(" автоматичекси на ");
+       Serial.print(" автоматически на ");
        Serial.print(change_time / 1000);
        Serial.print(" секунд");
     }
@@ -561,7 +586,7 @@ void startWiFi() {
     // Такой таймаут нужен в случае, когда отключают электричество, при последующем включении устройство стартует быстрее
     // чем роутер успеет загрузитиься и создаать сеть. При коротком таймауте устройство не найдет сеть и создаст точку доступа,
     // то есть не сможет управляться через MQTT, n/r нет сети - нет подключения к серверу
-    for (int j = 0; j < 10; j++ ) {
+    for (int j = 0; j < 330; j++ ) {
       connected = WiFi.status() == WL_CONNECTED; 
       if (connected) {
         // Подключение установлено
