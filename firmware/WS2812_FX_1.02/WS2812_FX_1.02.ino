@@ -397,10 +397,9 @@ void loop() {
       }
     }
     ArduinoOTA.handle();
-  }
-
-  if (client.connected()){
-    client.loop();      
+    if (client.connected()){
+      client.loop();      
+    }
   }
 
   // Проверка наличия команд - раз в 250 мсек. 
