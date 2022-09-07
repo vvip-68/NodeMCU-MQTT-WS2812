@@ -24,7 +24,7 @@
 //            - Randomize mode's durations in random mode 
 //            - Save default power settings on first initilaization  
 
-#define FIRMWARE_VER F("\n\nWS2812_FX WiFi-MQTT v.1.02.2020.1002")
+#define FIRMWARE_VER F("\n\nWS2812_FX WiFi-MQTT v.1.02.2022.0907")
 
 #define LED_COUNT 330         // число светодиодов в кольце/ленте
 #define LED_DT D4             // пин, куда подключен DIN ленты
@@ -34,18 +34,6 @@
 
 #define POWER_ON  HIGH        // Для включения питания матрицы (через MOSFET) подавать на пин POWER_PIN высокий уровень
 #define POWER_OFF LOW         // Для вЫключения питания матрицы (через MOSFET) подавать на пин POWER_PIN низкий уровень
-
-#define TOPIC_MODE_CMD "led/mode/cmd"   // Топик - получение команды управления
-#define TOPIC_MODE_NFO "led/mode/nfo"   // Топик - отправка информационных уведомлений
-#define TOPIC_MODE_ERR "led/mode/err"   // Топик - отправка уведомлений об ошибке
-#define TOPIC_MODE_RND "led/mode/rnd"   // Топик - отправка уведомлений о текущем состоянии автосмены режима
-#define TOPIC_MODE_PM  "led/mode/pm"    // Топик - отправка уведомления о параметрах режима
-#define TOPIC_MODE_BR  "led/mode/br"    // Топик - отправка уведомления о значении яркости
-#define TOPIC_MODE_PWR "led/mode/pwr"   // Топик - отправка уведомления о состоянии питания
-#define TOPIC_MODE_RGB "led/mode/rgb"   // Топик - отправка уведомления о пользовательском цвете
-#define TOPIC_MODE_FAV "led/mode/fav"   // Топик - отправка уведомления о списке любимых режимов
-#define TOPIC_MODE_LST "led/mode/lst"   // Топик - отправка уведомления о полном списке режимов
-#define TOPIC_MODE_EDT "led/mode/edt"   // Топик - отправка параметров режима для их редактирования в Android-программе
 
 // Comment the next line to stop useing hardware randomizer for initial random seed. 
 // So reading analog input 0 + microseconds will be used instead
@@ -64,20 +52,32 @@
 // #define public
 #ifndef public 
 
-#include "settings.h"         // приватные данные и пароли доступа к серверу MQTT и WiFi сети
+#include "settings.h"                       // приватные данные и пароли доступа к серверу MQTT и WiFi сети
 
 #else
 // ------------- WiFi & MQTT parameters --------------
 const char *ssid = "SSID";                  // Имя WiFi cети
 const char *pass = "PASS";                  // Пароль WiFi cети
-
-const char *mqtt_server = "servername";     // Имя сервера MQTT
-const int   mqtt_port = 12345;              // Порт для подключения к серверу MQTT
-const char *mqtt_user = "username";         // Логин от сервера
+// В этой версии используется публичный MQTT-брокер https://mqtt.by
+// Зарегистрируйтесь на сервере, создайте свой профиль, Логин и Пароль перенесите в настройки ниже
+const char *mqtt_server = "mqtt.by";        // Имя сервера MQTT
+const int   mqtt_port = 1883;               // Порт для подключения к серверу MQTT
+const char *mqtt_user = "username";         // Логин от сервера - замените ниже также имя пользователя в определении топиков
 const char *mqtt_pass = "password";         // Пароль от сервера
 // ------------- WiFi & MQTT parameters --------------
+// Для mqtt.by префикс топика формируется из заданного выше имени пользователя - username
+#define TOPIC_MODE_CMD "user/username/led/mode/cmd"   // Топик - получение команды управления
+#define TOPIC_MODE_NFO "user/username/led/mode/nfo"   // Топик - отправка информационных уведомлений
+#define TOPIC_MODE_ERR "user/username/led/mode/err"   // Топик - отправка уведомлений об ошибке
+#define TOPIC_MODE_RND "user/username/led/mode/rnd"   // Топик - отправка уведомлений о текущем состоянии автосмены режима
+#define TOPIC_MODE_PM  "user/username/led/mode/pm"    // Топик - отправка уведомления о параметрах режима
+#define TOPIC_MODE_BR  "user/username/led/mode/br"    // Топик - отправка уведомления о значении яркости
+#define TOPIC_MODE_PWR "user/username/led/mode/pwr"   // Топик - отправка уведомления о состоянии питания
+#define TOPIC_MODE_RGB "user/username/led/mode/rgb"   // Топик - отправка уведомления о пользовательском цвете
+#define TOPIC_MODE_FAV "user/username/led/mode/fav"   // Топик - отправка уведомления о списке любимых режимов
+#define TOPIC_MODE_LST "user/username/led/mode/lst"   // Топик - отправка уведомления о полном списке режимов
+#define TOPIC_MODE_EDT "user/username/led/mode/edt"   // Топик - отправка параметров режима для их редактирования в Android-программе
 #endif
-
 /*
   Использование команд от MQTT
   Отправка со стороны MQTT:
@@ -159,8 +159,8 @@ WiFiClient wclient;
 PubSubClient client(wclient);
 
 WiFiUDP udp;
-//byte IP_STA[] = {192, 168, 0, 116}; // Статический адрес в локальной сети WiFi - использовать указанный
-byte IP_STA[] = {0, 0, 0, 0};         // Статический адрес в локальной сети WiFi не задан - использовать автоматический
+byte IP_STA[] = {192, 168, 0, 116};   // Статический адрес в локальной сети WiFi - использовать указанный
+// byte IP_STA[] = {0, 0, 0, 0};      // Статический адрес в локальной сети WiFi не задан - использовать автоматический
 unsigned int localPort = 2390;        // локальный порт прослушивания входящих UDP пакетов
 
 #define UDP_CONNECTION_TIMEOUT 600000   // Таймаут связи с клиентом. Если 600 сек не было связи - забывать о клиенте 
