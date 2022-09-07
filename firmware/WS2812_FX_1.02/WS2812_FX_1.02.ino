@@ -159,7 +159,7 @@ WiFiClient wclient;
 PubSubClient client(wclient);
 
 WiFiUDP udp;
-byte IP_STA[] = {192, 168, 0, 116};   // Статический адрес в локальной сети WiFi - использовать указанный
+byte IP_STA[] = {192, 168, 0, 120};   // Статический адрес в локальной сети WiFi - использовать указанный
 // byte IP_STA[] = {0, 0, 0, 0};      // Статический адрес в локальной сети WiFi не задан - использовать автоматический
 unsigned int localPort = 2390;        // локальный порт прослушивания входящих UDP пакетов
 
@@ -311,6 +311,7 @@ void setup() {
   startWiFi();  
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
+  client.setBufferSize(2048);
   
   // Port defaults to 8266
   // ArduinoOTA.setPort(8266);
