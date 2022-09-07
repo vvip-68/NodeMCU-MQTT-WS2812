@@ -34,13 +34,13 @@
     LED_DT D4                                   // пин, куда подключен DIN ленты
 
     // ------------- WiFi & MQTT parameters --------------
-    const char *ssid = "SSID";                  // Имя WiFi cети
-    const char *pass = "PASS";                  // Пароль WiFi cети
+    const char *ssid = "SSID";                            // Имя WiFi cети
+    const char *pass = "PASS";                            // Пароль WiFi cети
 
-    const char *mqtt_server = "mqtt.by";        // Имя сервера MQTT
-    const int   mqtt_port = 1883;               // Порт для подключения к серверу MQTT
-    const char *mqtt_user = "username";         // Логин от сервера
-    const char *mqtt_pass = "password";         // Пароль от сервера
+    const char *mqtt_server = "mqtt.by";                  // Имя сервера MQTT
+    const int   mqtt_port = 1883;                         // Порт для подключения к серверу MQTT
+    const char *mqtt_user = "username";                   // Логин от сервера
+    const char *mqtt_pass = "password";                   // Пароль от сервера
     // ------------- WiFi & MQTT parameters --------------
     #define TOPIC_MODE_CMD "user/username/led/mode/cmd"   // Топик - получение команды управления
     #define TOPIC_MODE_NFO "user/username/led/mode/nfo"   // Топик - отправка информационных уведомлений
@@ -118,25 +118,25 @@
 
 Примеры - управление со страницы MQTT:
 
-    topic: led/mode/cmd  value: PM:42:60:45:0:3:1:0 // Изменить параметры режима 42
-    topic: led/mode/cmd  value: PM:22:60:50:4:0:1:1 // Изменить параметры режима 22 и включить его
-    topic: led/mode/cmd  value: PM:22               // Запросить параметры режима 22
-    topic: led/mode/cmd  value: BR:200              // Установить максимальную яркость ленты 200
-    topic: led/mode/cmd  value: SV                  // Сохранить параметры режимов и настройки в EEPROM
-    topic: led/mode/cmd  value: PM                  // Запросить какой режим "проигрывается" и его параметры
-    topic: led/mode/cmd  value: DO:22               // Включить (активизировать) режим 22
-    topic: led/mode/cmd  value: US:22:0             // Исключить режим 22 из списка "любимых" режимов
-    topic: led/mode/cmd  value: RGB:255:0:255       // Включить всю ленту сиреневым цветом
-    topic: led/mode/cmd  value: RGB:#FF00FF         // Включить всю ленту сиреневым цветом
-    topic: led/mode/cmd  value: PWR                 // Запросить текущий статус ВКЛ/ВЫКЛ
-    topic: led/mode/cmd  value: PWR:OFF             // "Выключить" эффекты с сохранением текущего состояния в EEPROM
-    topic: led/mode/cmd  value: PWR:ON              // "Включить" эффекты с того места, где было программно выключено
-    topic: led/mode/cmd  value: LST                 // Получить список доступных для использования эффектов
-    topic: led/mode/cmd  value: FAV                 // Получить список выбранных для использования "любимых" эффектов
+    topic: user/username/led/mode/cmd  value: PM:42:60:45:0:3:1:0 // Изменить параметры режима 42
+    topic: user/username/led/mode/cmd  value: PM:22:60:50:4:0:1:1 // Изменить параметры режима 22 и включить его
+    topic: user/username/led/mode/cmd  value: PM:22               // Запросить параметры режима 22
+    topic: user/username/led/mode/cmd  value: BR:200              // Установить максимальную яркость ленты 200
+    topic: user/username/led/mode/cmd  value: SV                  // Сохранить параметры режимов и настройки в EEPROM
+    topic: user/username/led/mode/cmd  value: PM                  // Запросить какой режим "проигрывается" и его параметры
+    topic: user/username/led/mode/cmd  value: DO:22               // Включить (активизировать) режим 22
+    topic: user/username/led/mode/cmd  value: US:22:0             // Исключить режим 22 из списка "любимых" режимов
+    topic: user/username/led/mode/cmd  value: RGB:255:0:255       // Включить всю ленту сиреневым цветом
+    topic: user/username/led/mode/cmd  value: RGB:#FF00FF         // Включить всю ленту сиреневым цветом
+    topic: user/username/led/mode/cmd  value: PWR                 // Запросить текущий статус ВКЛ/ВЫКЛ
+    topic: user/username/led/mode/cmd  value: PWR:OFF             // "Выключить" эффекты с сохранением текущего состояния в EEPROM
+    topic: user/username/led/mode/cmd  value: PWR:ON              // "Включить" эффекты с того места, где было программно выключено
+    topic: user/username/led/mode/cmd  value: LST                 // Получить список доступных для использования эффектов
+    topic: user/username/led/mode/cmd  value: FAV                 // Получить список выбранных для использования "любимых" эффектов
 
 При смене режима серверу автоматически отправляется уведомление, например:
 
-    topic: led/mode/set  value: PM:22:60:50:4:0:1:1     
+    topic: user/username/led/mode/set  value: PM:22:60:50:4:0:1:1     
 
 ## Управление через Android приложения
 
@@ -158,7 +158,7 @@
 
 После того, как программа установлена на смартфоне, в ней открывается демонстрационный режим - пример управления умным домом от автора программы. 
 * Шаг 1. Скачайте файл настроек 'Lazy MQTT-настройки.txt' на телефон.
-* Шаг 2. Откройте файл каким-нибудь редактором, поддерживающим замену текста. По всему тексту замените строчку 'led/mode/' на строчку 'user/<username>/led/mode',
+* Шаг 2. Откройте файл каким-нибудь редактором, поддерживающим замену текста. По всему тексту замените строчку 'led/mode/' на строчку 'user/username/led/mode',
 где 'username' - ваш логин, полученный в настройках профиля на сервере mqtt.by
 * Шаг 3. Выделите все содержимое файла настроек и скопируйте его в буфер обмена.
 * Шаг 4. Откройте на телефоне программу Lazy MQTT, перейдите в меню программы, выберите пункт "Установки".
