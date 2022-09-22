@@ -1,0 +1,47 @@
+@mixin image($image, $color, $size) {
+  background-color: $color;
+  -webkit-mask: url($image) no-repeat center center / #{$size};
+  mask: url($image) no-repeat center center / #{$size};
+  width: #{$size};
+  height: #{$size};
+}
+
+@mixin sun($color, $size) {
+  @include image('../assets/images/sun.svg', $color, $size);
+}
+
+@mixin moon($color, $size) {
+  @include image('../assets/images/moon.svg', $color, $size);
+}
+
+@mixin lamp($color, $size) {
+  @include image('../assets/images/lamp.svg', $color, $size);
+}
+
+@mixin power($color, $size) {
+  @include image('../assets/images/power.svg', $color, $size);
+}
+
+@mixin wifi($color, $size) {
+  @include image('../assets/images/wifi.svg', $color, $size);
+}
+
+@mixin palette($color, $size) {
+  @include image('../assets/images/palette.svg', $color, $size);
+}
+
+@mixin user($color, $size) {
+  @include image('../assets/images/person.svg', $color, $size);
+}
+
+@mixin star($color, $size) {
+  @include image('../assets/images/star.svg', $color, $size);
+}
+
+@mixin heart($color, $size) {
+  @include image('../assets/images/heart.svg', $color, $size);
+}
+
+@mixin gear($color, $size) {
+  @include image('../assets/images/gear.svg', $color, $size);
+}

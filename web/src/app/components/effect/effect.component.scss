@@ -1,0 +1,121 @@
+@use './../../app-theme';
+@import './../../../styles/images';
+
+@media screen and (max-width: 385px) {
+  .card {
+    width: 146px !important;
+
+    .card-name {
+      font-size: 13px !important;
+    }
+  }
+}
+
+::ng-deep .settings-dialog-panel {
+  max-width: calc(100vw - 8px) !important;
+
+  .mat-dialog-container.cdk-dialog-container {
+    padding: 0;
+    margin: 8px;
+    overflow: hidden;
+
+    .mat-dialog-content {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+  }
+}
+
+
+.card {
+  border-radius: 4px;
+  border: 1px solid var(--card-border-color);
+  background-color: var(--card-background-color);
+  height: 54px;
+  width: 180px;
+  margin: 0 6px 12px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.2s ease-in-out;
+  line-height: 24px;
+  cursor: pointer;
+  pointer-events: auto;
+
+  &.disabled {
+    cursor: default;
+    pointer-events: none;
+  }
+
+  &.active:not(.disabled) {
+    color: var(--card-active-color);
+  }
+
+  &.active:not(.disabled),
+  &:hover {
+    filter: drop-shadow(0px 0px 9px var(--card-box-shadow));
+
+    svg.material-icons path {
+      fill: var(--card-icon-fill-highlight-color);
+    }
+  }
+
+  &:hover {
+    transform: translateY(-3px);
+  }
+
+  .card-content {
+    display: flex;
+    width: 100%;
+    position: relative;
+    flex-direction: row;
+    height: 100%;
+    justify-content: center;
+    align-items: center;
+
+    .favor {
+      position: absolute;
+      left: 11px;
+      top: calc(50% - 11px);
+      cursor: pointer;
+      @include heart(var(--card-icon-normal-color), 22px);
+
+      &.fav {
+        background-color: var(--card-icon-active-color);
+      }
+    }
+
+    .card-name {
+      width: 100%;
+      height: 100%;
+      font-size: 14px;
+      text-align: center;
+      margin: 4px 38px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      line-height: 1em;
+    }
+
+    .settings {
+      position: absolute;
+      right: 11px;
+      top: calc(50% - 11px);
+      cursor: pointer;
+      @include gear(var(--toolbar-foreground-color), 22px);
+    }
+
+    svg.material-icons {
+      height: 24px;
+      width: auto;
+      fill: var(--card-icon-fill-color);
+
+      &:not(:last-child) {
+        margin-right: 8px;
+      }
+    }
+  }
+
+}

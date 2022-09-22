@@ -1,0 +1,78 @@
+<mat-toolbar class="toolbar" color="primary" role="banner">
+  <mat-toolbar-row>
+    <!-- Toolbar -->
+    <div class="lamp"></div>
+    <h1>{{title}}</h1>
+    <div class="spacer"></div>
+    <div class="light" matTooltip="Светлая тема" (click)="setDarkTheme(false)"></div>
+    <mat-slide-toggle class="theme-switch" [checked]="isDarkTheme" matTooltip="Выбор темы оформления"
+                      (change)="changeTheme($event)"></mat-slide-toggle>
+    <div class="dark" matTooltip="Темная тема" (click)="setDarkTheme(true)"></div>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<div *ngIf="socketService.firstConnect || !socketService.isConnected" class="connect-wrapper">
+  <div class="connect-message">
+    <div class="wifi-sign"></div>
+    <h1>{{socketService.firstConnect ? 'Подключение...' : 'Соeдинение утеряно...' }}</h1>
+  </div>
+</div>
+
+<div *ngIf="!socketService.firstConnect" class="content" role="main">
+  <div class="power-brightness">
+    <div class="power-btn">
+      <app-action [config]="power" [disabled]="!this.socketService.isConnected" [tooltip]="state.power ? 'Выключить' : 'Включить'"></app-action>
+      <span>Яркость</span>
+    </div>
+    <div class="brightness-container">
+      <div class="brightness-buttons">
+        <app-action [config]="bright_5" [disabled]="isDisabled()" tooltip="5%"></app-action>
+        <app-action [config]="bright_25" [disabled]="isDisabled()" tooltip="25%"></app-action>
+        <app-action [config]="bright_50" [disabled]="isDisabled()" tooltip="50%"></app-action>
+        <app-action [config]="bright_75" [disabled]="isDisabled()" tooltip="75%"></app-action>
+        <app-action [config]="bright_100" [disabled]="isDisabled()" tooltip="100%"></app-action>
+      </div>
+      <app-brightness-slider class="brightness-slider" [disabled]="isDisabled()" [value]="state.brightness"></app-brightness-slider>
+    </div>
+  </div>
+
+  <div class="colors-palette">
+    <div class="colors-part">
+      <app-action [config]="color_black" [disabled]="isDisabled()"></app-action>
+      <app-action [config]="color_r" [disabled]="isDisabled()"></app-action>
+      <app-action [config]="color_g" [disabled]="isDisabled()"></app-action>
+      <app-action [config]="color_b" [disabled]="isDisabled()"></app-action>
+      <app-action [config]="color_set" [disabled]="isDisabled()" tooltip="Выбор цвета пользователя"></app-action>
+    </div>
+    <div class="colors-part">
+      <app-action [config]="color_white" [disabled]="isDisabled()"></app-action>
+      <app-action [config]="color_y" [disabled]="isDisabled()"></app-action>
+      <app-action [config]="color_c" [disabled]="isDisabled()"></app-action>
+      <app-action [config]="color_m" [disabled]="isDisabled()"></app-action>
+      <app-action [config]="color_user" [disabled]="isDisabled()" tooltip="Включить цвет пользователя"></app-action>
+    </div>
+  </div>
+
+  <div class="random-mode">
+    <mat-checkbox [(ngModel)]="state.isRandom" labelPosition="after" color="primary"
+                  [disabled]="isDisabled()" (change)="toggleRandomMode($event)">
+      Случайный выбор эффекта
+    </mat-checkbox>
+  </div>
+
+  <div class="card-container">
+    <app-effect *ngFor="let effect of effectService.effects$ | async as list"
+                [model]="effect" [disabled]="isDisabled()">
+    </app-effect>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div class="version" *ngIf="state.power && state.error.length === 0 && state.info.length === 0 && socketService.isConnected">{{state.version}}</div>
+  <div class="noconnect" *ngIf="state.power && state.error.length === 0 && state.info.length === 0 && !socketService.isConnected">*** Нет связи с устройством ***</div>
+  <div class="poweroff" *ngIf="socketService.isConnected && !state.power">*** Устройство выключено ***</div>
+  <div class="info" *ngIf="state.power && state.info.length > 0">{{state.info}}</div>
+  <div class="error" *ngIf="state.power && state.error.length > 0">{{state.error}}</div>
+</div>
+

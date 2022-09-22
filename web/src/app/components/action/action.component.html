@@ -1,0 +1,8 @@
+<div class="card" #card
+     [style.pointer-events]="disabled ? 'none' : 'auto'"
+     [ngClass]="{'disabled': disabled, 'active': config.active}"
+     [matTooltip]="tooltip" matTooltipPosition="below"
+     (click)="doSetCommand()">
+  <div #icon></div>
+  <div #indicator *ngIf="config.mode === actionType.BRIGHT" class="indicator"></div>
+</div>

@@ -1,0 +1,55 @@
+<div class="params-container">
+  <mat-dialog-content>
+    <h1>{{model.name}}</h1>
+    <div class="params-wrapper-container">
+      <div class="params-loader" *ngIf="!isLoaded">
+        <p>Загрузка...</p>
+      </div>
+      <div class="params-wrapper" *ngIf="isLoaded">
+        <div class="param-row">
+          <div class="param-label" [matTooltip]="tooltip1" matTooltipPosition="below"><p>Время, сек.</p></div>
+          <div class="param-value">
+            <mat-slider #sl1 class="slider" color="primary" thumbLabel [(ngModel)]="model.duration" min="10" step="5" max="240"></mat-slider>
+            <p *ngIf="!sl1.disabled">{{sl1.value}}</p>
+            <p *ngIf="sl1.disabled">Параметр не используется</p>
+          </div>
+        </div>
+        <div class="param-row">
+          <div class="param-label" [matTooltip]="tooltip2" matTooltipPosition="below"><p>Скорость</p></div>
+          <div class="param-value">
+            <mat-slider #sl2 class="slider" color="primary" thumbLabel [disabled]="model.speed === 0" [(ngModel)]="speed" min="2" step="1" max="128"></mat-slider>
+            <p *ngIf="!sl2.disabled">{{sl2.value}}</p>
+            <p *ngIf="sl2.disabled">Параметр не используется</p>
+          </div>
+        </div>
+        <div class="param-row">
+          <div class="param-label" [matTooltip]="tooltip3" matTooltipPosition="below"><p>Сегменты</p></div>
+          <div class="param-value">
+            <mat-slider #sl3 class="slider" color="primary" thumbLabel [disabled]="model.segments === 0" [(ngModel)]="model.segments" min="1" step="1" max="12"></mat-slider>
+            <p *ngIf="!sl3.disabled">{{sl3.value}}</p>
+            <p *ngIf="sl3.disabled">Параметр не используется</p>
+          </div>
+        </div>
+        <div class="param-row">
+          <div class="param-label" [matTooltip]="tooltip4" matTooltipPosition="below"><p>Шаг изменения</p></div>
+          <div class="param-value">
+            <mat-slider #sl4 class="slider" color="primary" thumbLabel [disabled]="model.step === 0" [(ngModel)]="model.step" min="1" step="1" max="12"></mat-slider>
+            <p *ngIf="!sl4.disabled">{{sl4.value}}</p>
+            <p *ngIf="sl4.disabled">Параметр не используется</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <div class="fav-wrapper" *ngIf="isLoaded" (click)="toggle()">
+      <div class="favor" [ngClass]="{'fav': model.fav}"></div>
+      <p>Избранный</p>
+    </div>
+    <div class="buttons">
+      <button mat-raised-button color="primary" (click)="apply($event)" [disabled]="!isLoaded">Применить</button>
+      <button mat-raised-button color="primary" (click)="cancel($event)" cdkFocusInitial>Отмена</button>
+    </div>
+  </mat-dialog-actions>
+</div>

@@ -1,0 +1,14 @@
+<div class="slider">
+  <div class="slider-wrapper">
+    <mat-slider #sl
+                class="brightness-slider" color="primary"
+                thumbLabel
+                [disabled]="disabled"
+                [value]="percent"
+                [displayWith]="formatLabel"
+                min="0" step="5"
+                max="100"
+                (valueChange)="valueChanged($event)"></mat-slider>
+    <p>{{ sl.value === 0 ? '' : sl.value + '%' }}</p>
+  </div>
+</div>

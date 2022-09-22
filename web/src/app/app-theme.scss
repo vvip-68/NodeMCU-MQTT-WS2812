@@ -1,0 +1,100 @@
+@use '@angular/material' as mat;
+@use 'sass:map';
+
+// Styles for the docs app that are based on the current theme.
+@mixin theme($theme, $isDark: false) {
+  $primary: map.get($theme, primary);
+  $accent: map.get($theme, accent);
+  $warn: map.get($theme, warn);
+  $background: map.get($theme, background);
+  $foreground: map.get($theme, foreground);
+
+  $background-color: mat.get-color-from-palette($background, background);
+  $foreground-color: mat.get-color-from-palette($foreground, text);
+  @if $isDark {
+    --app-background-color: #{darken($background-color, 10%)};
+    --app-foreground-color: #{darken($foreground-color, 10%)};
+  } @else {
+    --app-background-color: #{$background-color};
+    --app-foreground-color: #{$foreground-color};
+  }
+
+  $toolbar-background-color: mat.get-color-from-palette($primary, 800);
+  $toolbar-foreground-color: mat.get-color-from-palette($primary, '800-contrast');
+  @if $isDark {
+    --toolbar-background-color: #393939;
+  } @else {
+    --toolbar-background-color: #{$toolbar-background-color};
+  }
+  --toolbar-foreground-color: #{darken($toolbar-foreground-color, 15%)};
+
+  $card-icon-fill-color: #888;
+
+  @if $isDark {
+    --card-border-color: #858585;
+    --card-background-color: #393939;
+    --card-active-color: #03afef;
+    --card-box-shadow: #aaa;
+    --card-icon-fill-color: #{$card-icon-fill-color};
+    --card-icon-fill-highlight-color: #{lighten($card-icon-fill-color, 20%)}; // rgb(105, 103, 103);
+    --card-icon-normal-color: #{darken($toolbar-foreground-color, 15%)};
+    --card-icon-active-color: #ffa4a4;
+    --color-picker-background: #464646;
+    --color-picker-border: #8b8b8b;
+    --power-ON: #00dcff;
+    --power-OFF: rgba(255, 255, 255, .5);
+    --bright_5: rgba(255, 255, 255, .2);
+    --bright_25: rgba(255, 255, 255, .3);
+    --bright_50: rgba(255, 255, 255, .4);
+    --bright_75: rgba(255, 255, 255, .5);
+    --bright_100: rgba(255, 255, 255, .6);
+    --indicator-ON: #22d722;
+    --indicator-OFF: rgba(255, 255, 255, .5);
+    --wifi-sign-color: #03afef;
+    --app-tilt-color: rgba(72, 72, 72, .25);
+    --app-dialog-color: #444444;
+    --app-dialog-border-color: #888;
+    --slider-thumb-color: #005ab3;
+    --slider-thumb-disabled-color: #afafaf;
+    --slider-track-fill: #004e9b;
+    --color-button-border: #afafaf;
+    --footer-poveroff: #03afef;
+    --dialog-secondary-text: #979797;
+  } @else {
+    --card-border-color: #8a8a8a;
+    --card-background-color: #fdfdfd;
+    --card-active-color: #10a0d5;
+    --card-box-shadow: #ccc;
+    --card-icon-fill-color: #{$card-icon-fill-color};
+    --card-icon-fill-highlight-color: #{darken($card-icon-fill-color, 20%)}; // rgb(105, 103, 103);
+    --card-icon-normal-color: #{darken($toolbar-foreground-color, 15%)};
+    --card-icon-active-color: #ffa4a4;
+    --color-picker-background: #ааа;
+    --color-picker-border: rgba(0, 0, 0, .2);
+    --power-ON: #00dcff;
+    --power-OFF: rgba(0, 0, 0, .5);
+    --bright_5: rgba(0, 0, 0, .1);
+    --bright_25: rgba(0, 0, 0, .2);
+    --bright_50: rgba(0, 0, 0, .3);
+    --bright_75: rgba(0, 0, 0, .4);
+    --bright_100: rgba(0, 0, 0, .5);
+    --indicator-ON: #03ab03;
+    --indicator-OFF: rgba(0, 0, 0, .1);
+    --wifi-sign-color: #03afef;
+    --app-tilt-color: rgba(175, 175, 175, .5);
+    --app-dialog-color: #e5e5e5;
+    --app-dialog-border-color: #545454;
+    --slider-thumb-color: #1380eb;
+    --slider-thumb-disabled-color: #afafaf;
+    --slider-track-fill: #006dd9;
+    --color-button-border: #afafaf;
+    --footer-poveroff: #72d9ff;
+    --dialog-secondary-text: #979797;
+  }
+  --footer-version: #{darken($toolbar-foreground-color, 15%)};
+  --footer-info: #14e114;
+  --footer-error: #ffa4a4;
+  --footer-noconnect: #ffa4a4;
+  --checkbox-tick-color: #4ecd5b;
+  --checkbox-frame-color: #9a9a9a;
+}

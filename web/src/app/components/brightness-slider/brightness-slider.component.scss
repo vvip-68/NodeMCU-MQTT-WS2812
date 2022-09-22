@@ -1,0 +1,29 @@
+.slider {
+  width: 100%;
+  height: auto;
+  margin-top: 8px;
+
+  .slider-wrapper {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+
+    p {
+      position: absolute;
+      bottom: -4px;
+      right: 8px;
+      font-size: 11px;
+      color: var(--dialog-secondary-text);
+    }
+
+    mat-slider.mat-slider {
+      width: 100%;
+      margin-top: -10px;
+
+      :host ::ng-deep &.mat-slider-horizontal {
+        height: 40px;
+      }
+    }
+  }
+}

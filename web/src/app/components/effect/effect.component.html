@@ -1,0 +1,12 @@
+<div class="card" [ngClass]="{'disabled': disabled, 'active': model.active}">
+  <div class="card-content">
+    <div class="favor" [ngClass]="{'fav': model.fav}"
+         matTooltip="Избранный эффект" matTooltipPosition="below"
+         (click)="favorit()"></div>
+    <div class="card-name" (click)="activate()"><p>{{model.name}}</p></div>
+    <div class="settings"
+         matTooltip="Настройки" matTooltipPosition="below"
+         (click)="settings()"></div>
+  </div>
+</div>
+

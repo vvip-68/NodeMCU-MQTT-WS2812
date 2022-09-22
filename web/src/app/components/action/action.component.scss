@@ -1,0 +1,142 @@
+@use './../../app-theme';
+@import './../../../styles/images';
+
+.card {
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  border: 1px solid var(--card-border-color);
+  background-color: var(--card-background-color);
+  cursor: pointer;
+  justify-content: center;
+  align-items: center;
+
+  &.active,
+  &:hover {
+    filter: drop-shadow(0px 0px 6px var(--card-box-shadow));
+  }
+
+  &.card_pwr {
+    height: 52px;
+    width: 52px;
+  }
+
+  &.card_br {
+    height: 52px;
+    width: 52px;
+  }
+
+  &.card_rgb {
+    height: 52px;
+    width: 64px;
+  }
+
+  .power {
+    @include power(var(--power-OFF), 32px);
+
+    &.state_ON {
+      background-color: var(--power-ON);
+    }
+  }
+
+  .bright {
+    position: relative;
+    top: -2px;
+
+    &.state_ON + .indicator {
+      background-color: var(--indicator-ON);
+    }
+
+    &.state_OFF + .indicator {
+      background-color: var(--indicator-OFF);
+    }
+
+    &.bright_5 {
+      @include sun(var(--bright_5), 32px);
+    }
+
+    &.bright_25 {
+      @include sun(var(--bright_25), 32px);
+    }
+
+    &.bright_50 {
+      @include sun(var(--bright_50), 32px);
+    }
+
+    &.bright_75 {
+      @include sun(var(--bright_75), 32px);
+    }
+
+    &.bright_100 {
+      @include sun(var(--bright_100), 32px);
+    }
+  }
+
+  .effect {
+    @include sun(lime, 32px);
+  }
+
+  .color {
+    border-radius: 4px;
+    width: 32px;
+    height: 32px;
+
+    &.color_black {
+      background-color: #000;
+      border: solid 1px var(--color-button-border);
+    }
+
+    &.color_white {
+      background-color: #fff;
+      border: solid 1px var(--color-button-border);
+    }
+
+    &.color_r {
+      background-color: #f00;
+      border: solid 1px var(--color-button-border);
+    }
+
+    &.color_g {
+      background-color: #0f0;
+      border: solid 1px var(--color-button-border);
+    }
+
+    &.color_b {
+      background-color: #00f;
+      border: solid 1px var(--color-button-border);
+    }
+
+    &.color_y {
+      background-color: #ff0;
+      border: solid 1px var(--color-button-border);
+    }
+
+    &.color_c {
+      background-color: #0ff;
+      border: solid 1px var(--color-button-border);
+    }
+
+    &.color_m {
+      background-color: #f0f;
+      border: solid 1px var(--color-button-border);
+    }
+
+    &.color_set {
+      @include palette(#777, 28px);
+    }
+
+    &.color_user {
+      @include user(#777, 32px);
+    }
+  }
+
+  .indicator {
+    position: relative;
+    bottom: -3px;
+    width: 90%;
+    height: 4px;
+    border-radius: 2px;
+    background-color: var(--indicator-OFF);
+  }
+}
+

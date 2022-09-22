@@ -1,0 +1,292 @@
+@use './app-theme';
+@import './../styles/images';
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 8px 0;
+}
+
+@keyframes wifi {
+  5%, 95% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+.toolbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 5;
+  height: 50px;
+  min-height: 50px;
+  display: flex;
+  align-items: center;
+  background-color: var(--toolbar-background-color) !important;
+  color: var(--toolbar-foreground-color) !important;
+  border-bottom: 1px solid var(--card-border-color);
+
+  h1 {
+    font-family: Bradley Hand, cursive;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0.075em;
+    font-size: 20px;
+  }
+
+  .theme-switch {
+    font-size: 16px;
+    margin: 0 18px;
+  }
+
+  .lamp {
+    @include lamp(yellow, 36px);
+    margin-left: -8px;
+  }
+
+  .light {
+    cursor: pointer;
+    @include sun(var(--toolbar-foreground-color), 32px);
+  }
+
+  .dark {
+    cursor: pointer;
+    @include moon(var(--toolbar-foreground-color), 24px);
+  }
+
+  .spacer {
+    flex: 1;
+  }
+}
+
+.connect-wrapper {
+  width: 100%;
+  height: calc(100vh - 75px);
+  position: fixed;
+  top: 50px;
+  background-color: var(--app-tilt-color);
+  backdrop-filter: blur(3px);
+  color: var(--app-foreground-color);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+
+  .connect-message {
+    background-color: var(--app-dialog-color);
+    border: solid 2px var(--app-dialog-border-color);
+    border-radius: 9px;
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 32px;
+    margin: 12px;
+
+    .wifi-sign {
+      @include wifi(var(--wifi-sign-color), 52px);
+      margin-right: 24px;
+      transition: all 0.5s ease-in-out;
+      animation: wifi infinite 2s;
+    }
+
+    h1 {
+      width: 100%;
+      text-align: center;
+      font-weight: bold;
+    }
+  }
+}
+
+.content {
+  display: flex;
+  margin: 64px auto 32px;
+  padding: 0 16px;
+  max-width: 960px;
+  flex-direction: column;
+  align-items: center;
+
+  .power-brightness {
+    display: flex;
+    flex-direction: row;
+    height: auto;
+    width: auto;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid var(--card-border-color);
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 12px;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 8px;
+
+    .power-btn {
+      display: flex;
+      flex-direction: column;
+
+      span {
+        font-size: 13px;
+        margin: 13px 0 0 2px;
+      }
+    }
+
+    .brightness-container {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brightness-buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+    }
+  }
+
+  .colors-palette {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    width: auto;
+    transition: all 0.2s ease-in-out;
+    border: 1px solid var(--card-border-color);
+    border-radius: 8px;
+    padding: 8px;
+    margin-bottom: 12px;
+    justify-content: center;
+    align-items: flex-start;
+
+    .colors-part {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+    }
+
+    .colors-part:first-child {
+      margin-bottom: 8px;
+    }
+  }
+
+  .random-mode {
+    width: 371px;
+    border: 1px solid var(--card-border-color);
+    border-radius: 8px;
+    padding: 8px 8px 8px 12px;
+    font-size: 16px;
+    letter-spacing: 0.15em;
+    transition: all 0.2s ease-in-out;
+
+    ::ng-deep mat-checkbox {
+      .mat-checkbox-layout {
+        .mat-checkbox-label {
+          margin-left: 1.5em;
+        }
+
+        .mat-checkbox-inner-container {
+          height: 22px;
+          width: 22px;
+
+          .mat-checkbox-background {
+            background-color: transparent;
+
+            .mat-checkbox-checkmark {
+              top: 1px;
+              left: 1px;
+              width: 20px;
+              height: 20px;
+            }
+
+            svg .mat-checkbox-checkmark-path {
+              margin: 2px;
+              stroke: var(--checkbox-tick-color) !important;
+            }
+          }
+
+          .mat-checkbox-background {
+
+            border: none;
+          }
+
+          .mat-checkbox-frame {
+            border: solid 1px var(--checkbox-frame-color);
+            border-radius: 5px;
+          }
+        }
+      }
+    }
+  }
+
+  .card-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 16px;
+    padding: 16px;
+  }
+}
+
+.footer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  width: 100%;
+  background-color: var(--toolbar-background-color) !important;
+  border-top: 1px solid var(--card-border-color);
+  font-size: 12px;
+  justify-content: center;
+  align-items: center;
+  height: 25px;
+  min-height: 25px;
+  z-index: 5;
+
+  .version {
+    color: var(--footer-version) !important;
+  }
+
+  .info {
+    color: var(--footer-info) !important;
+  }
+
+  .error {
+    color: var(--footer-error) !important;
+  }
+
+  .noconnect {
+    color: var(--footer-noconnect) !important;
+  }
+
+  .poweroff {
+    color: var(--footer-poveroff) !important;
+  }
+}
+
+::ng-deep .color-dialog-panel {
+  max-width: calc(100vw - 8px) !important;
+
+  .mat-dialog-container {
+    padding: 0;
+    margin: 8px;
+    overflow: hidden;
+
+    .mat-dialog-content {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+  }
+}
+
+
+/* Responsive Styles */
+@media screen and (max-width: 385px) {
+  .card-container {
+    width: 100%;
+    display: block;
+  }
+}
+

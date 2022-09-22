@@ -1,0 +1,134 @@
+@use './../../app-theme';
+@import './../../../styles/images';
+
+:host .params-container {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--card-background-color);
+  border: solid 1px var(--card-border-color);
+  border-radius: 6px;
+  padding: 12px 0;
+  transition: all 0.2s ease-in-out;
+
+  h1 {
+    margin: 0 12px;
+    text-overflow: ellipsis;
+  }
+
+  .mat-dialog-content {
+    padding: 0;
+  }
+
+  .params-wrapper-container {
+    height: 172px;
+
+    .params-loader {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      p {
+        font-size: 24px;
+        text-align: center;
+        width: 382px;
+        color: var(--dialog-secondary-text);
+      }
+    }
+
+    .params-wrapper {
+      display: flex;
+      flex-direction: column;
+      padding: 0 16px 0 22px;
+      width: 100%;
+      height: 100%;
+
+      .param-row {
+        display: flex;
+        flex-direction: row;
+
+        .param-label {
+          width: 114px;
+          justify-content: flex-start;
+          align-items: center;
+          display: flex;
+          cursor: help;
+
+          p {
+            display: inline-block;
+            margin-top: 22px;
+          }
+        }
+
+        .param-value {
+          position: relative;
+          width: 224px;
+
+          p {
+            position: absolute;
+            bottom: -8px;
+            right: 8px;
+            font-size: 11px;
+            color: var(--dialog-secondary-text);
+          }
+
+          .slider {
+            width: 100%;
+            height: 32px;
+          }
+        }
+      }
+
+      .param-row:last-child {
+        margin-bottom: 12px;
+      }
+    }
+  }
+
+  mat-dialog-actions {
+    display: block;
+    position: relative;
+    margin-top: 12px;
+
+    .fav-wrapper {
+      display: flex;
+      flex-direction: row;
+      position: absolute;
+      left: 12px;
+      top: 16px;
+
+      p {
+        display: inline-block;
+        margin: 3px 0 0 8px;
+        font-size: 12px;
+      }
+
+      .favor {
+        cursor: pointer;
+        @include heart(var(--card-icon-normal-color), 22px);
+        margin-top: -1px;
+
+        &.fav {
+          background-color: var(--card-icon-active-color);
+        }
+      }
+    }
+
+    .buttons {
+      padding: 0 12px 28px 0;
+
+      button {
+        width: 98px;
+        padding: 0 4px;
+
+        ::ng-deep .mat-button-focus-overlay {
+          display: none;
+        }
+
+      }
+    ;
+    }
+  }
+
+}

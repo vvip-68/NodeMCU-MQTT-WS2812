@@ -1,0 +1,119 @@
+@use '../app/app-theme';
+
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Material Icons'),
+  url("./../assets/fonts/MI.woff2") format('woff2')
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+  font-feature-settings: 'liga';
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+*:focus {
+  outline: none;
+}
+
+body {
+  font-family: "Roboto", "Helvetica Neue Light", "Helvetica Neue", Helvetica, Arial, "Lucida Grande", sans-serif;
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  color: var(--app-foreground-color);
+  background-color: var(--app-background-color);
+
+  &.noscroll {
+    overflow: hidden;
+  }
+}
+
+h1, h2 {
+  font-weight: 400;
+}
+
+mat-tooltip-component .mat-tooltip {
+  font-size: 13px;
+  margin: 5px;
+  max-width: 375px;
+  white-space: pre-line;
+}
+
+:root .mat-slider.mat-slider-disabled {
+  .mat-slider-thumb {
+    background-color: var(--slider-thumb-disabled-color) !important;
+  }
+}
+
+:root .mat-slider:not(.mat-slider-disabled),
+:root .mat-slider.mat-slider-min-value:not(.mat-slider-disabled) {
+  .mat-slider-thumb {
+    background-color: var(--slider-thumb-color);
+  }
+}
+
+.mat-slider {
+  width: 100%;
+  margin-top: 8px;
+  height: 16px;
+
+  .mat-slider-wrapper {
+    top: 4px;
+  }
+
+  .mat-slider-track-fill {
+    background-color: var(--slider-track-fill) !important;
+  }
+
+  .mat-slider-thumb-container {
+
+    .mat-slider-thumb-label {
+      transform: scale(1) rotate(45deg);
+      top: -15px;
+    }
+
+    .mat-slider-thumb {
+      border-radius: 50%;
+      top: -10px;
+    }
+
+    .mat-slider-thumb-label {
+      background-color: var(--slider-thumb-color) !important;
+      border-radius: 50% !important;
+
+      .mat-slider-thumb-label-text {
+        font-size: 11px !important;
+        font-weight: 100 !important;;
+      }
+    }
+  }
+
+}
+
+.mat-slider:not(.cdk-focused) {
+  .mat-slider-thumb-label {
+    transform: scale(0.01) rotate(45deg);
+  }
+}
