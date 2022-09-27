@@ -2,11 +2,11 @@ import {Injectable, OnDestroy} from '@angular/core';
 import {interval, Observable, Observer, Subject, Subscription, takeWhile} from 'rxjs';
 import {distinctUntilChanged, filter, map, share} from 'rxjs/operators';
 import {WebSocketSubject, WebSocketSubjectConfig} from 'rxjs/webSocket';
-import {environment} from "../../../environments/environment";
+import {environment} from '../../../environments/environment';
 
 export const WS = {
-  ON: {STATE: 'stt'},
-  SEND: {COMMAND: 'cmd'}
+  ON: { STATE: 'stt' },
+  SEND: { COMMAND: 'cmd' }
 };
 
 export interface IWebsocketService {
@@ -39,12 +39,12 @@ export class WebsocketService implements IWebsocketService, OnDestroy {
   private websocket$: WebSocketSubject<IWsMessage<any>> | null = null;
 
   // сообщает, когда происходит коннект и реконнект
-  private connection$: Observer<boolean> | null = null
+  private connection$: Observer<boolean> | null = null;
 
   // вспомогательный Observable для работы с подписками на сообщения
   private wsMessages$: Subject<IWsMessage<any>>;
 
-  private url = environment.production ? `ws://${window.location.hostname}/ws` : "ws://192.168.0.120/ws";
+  private url = environment.production ? `ws://${window.location.hostname}/ws` : 'ws://192.168.0.120/ws';
 
   private pingInterval = 2500;
   private reconnectInterval = 5000;
@@ -100,15 +100,16 @@ export class WebsocketService implements IWebsocketService, OnDestroy {
 
     // говорим, что что-то пошло не так + проверка полученных в сокет данных
     this.wsMessages$ = new Subject<IWsMessage<any>>();
-    this.websocketSub = this.wsMessages$.subscribe(
-      (data: IWsMessage<any>) => {
-        // console.log(data);
-      },
-      (error: ErrorEvent) => {
-        console.error('WebSocket error!', error);
-        this.connection$?.next(false);
-      }
-    );
+    this.websocketSub = this.wsMessages$
+      .subscribe({
+        next: (data: IWsMessage<any>) => {
+          // console.log(data);
+        },
+        error: (error: ErrorEvent) => {
+          console.error('WebSocket error!', error);
+          this.connection$?.next(false);
+        }
+      });
 
     // Интервал проверки соединения - отвечает ли сервер (ping-pong)
     interval(this.pingInterval).subscribe((i) => {
@@ -129,15 +130,16 @@ export class WebsocketService implements IWebsocketService, OnDestroy {
     // если нет, ожидаем
     // реконнектимся, если получили ошибку
     this.websocket$
-      .subscribe(
-        (message: IWsMessage<any>) => this.wsMessages$.next(message),
-        (error: Event) => {
+      .subscribe({
+        next: (message: IWsMessage<any>) => this.wsMessages$.next(message),
+        error: (error: Event) => {
           if (!this.websocket$) {
             // run reconnect if errors
             this.connection$?.next(false);
             this.reconnect();
           }
-        });
+        }
+      });
   }
 
   private reconnect(): void {
@@ -146,10 +148,9 @@ export class WebsocketService implements IWebsocketService, OnDestroy {
       .pipe(takeWhile((v, index) => !this.websocket$));
 
     // Пытаемся подключиться пока не подключимся, либо не упремся в ограничение попыток подключения
-    this.reconnection$.subscribe(
-      () => this.connect(),
-      null,
-      () => {
+    this.reconnection$.subscribe({
+      next: () => this.connect(),
+      complete: () => {
         // Subject complete if reconnect attemts ending
         this.reconnection$ = null;
 
@@ -157,7 +158,8 @@ export class WebsocketService implements IWebsocketService, OnDestroy {
           this.wsMessages$.complete();
           this.connection$?.complete();
         }
-      });
+      }
+    });
   }
 
   /*
@@ -165,7 +167,7 @@ export class WebsocketService implements IWebsocketService, OnDestroy {
   * */
   private ping() {
     if (this.websocket$) {
-      this.websocket$?.next({e: '?', d: ''});
+      this.websocket$?.next({ e: '?', d: '' });
       this.sentPing = true;
       this.gotPong = false;
     } else {
@@ -198,7 +200,7 @@ export class WebsocketService implements IWebsocketService, OnDestroy {
   public send(event: string, data: any = {}): void {
     if (this.isConnected) {
       if (event === WS.SEND.COMMAND) {
-        this.websocket$?.next({e: event, d: data});
+        this.websocket$?.next({ e: event, d: data });
       }
     }
   }
