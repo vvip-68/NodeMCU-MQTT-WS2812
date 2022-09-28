@@ -86,7 +86,7 @@
 
 #if defined(ESP32)
   #define   LittleFS LITTLEFS
-  #include <LittleFS.h>         // Библиотека для работы с файловой системой LittleFS
+  #include <LITTLEFS.h>         // Библиотека для работы с файловой системой LittleFS
   #include <AsyncTCP.h>         // Библиотека поддержки для AsyncWebServer  -- https://github.com/me-no-dev/AsyncTCP
   #include <ESPmDNS.h>          // Для обнаружения платы при прошивке "по воздуху"
 #endif
