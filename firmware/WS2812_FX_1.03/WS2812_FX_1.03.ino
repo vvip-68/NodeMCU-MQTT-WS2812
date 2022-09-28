@@ -321,7 +321,7 @@ struct ModeParameter {
 };
 
 // массив параметров режимов
-ModeParameter mode_params[MAX_EFFECT];
+ModeParameter mode_params[MAX_EFFECT + 1];
 
 byte *fav_modes = NULL;  // список "любимых" режимов (динамический массив)
 byte fav_modes_num = 0;  // текущий размер массива режимов
