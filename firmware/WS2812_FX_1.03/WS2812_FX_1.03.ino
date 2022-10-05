@@ -17,7 +17,7 @@
 //            - Save default power settings on first initilaization  
 //  v1.03 - поддержка управления гирляндой через Web-приложение в браузере
 
-#define FIRMWARE_VER F("Lights Web/MQTT v.1.03.2022.0928")
+#define FIRMWARE_VER F("Lights Web/MQTT v.1.03.2022.1005")
 
 // -------------------------------------------------------------------------------------------------------
 // Ссылки для установки ядра поддержки платы мкроконтроллера "Файл" -> "Настройки" -> Дополнительные ссылки для менеджера плат
@@ -100,6 +100,7 @@
 #include <WiFiUdp.h>            // библиотека для работы с UDP-сокетами через WiFi
 #include <ArduinoJson.h>        // Библиотека для работы с JSON (прием команд из WEB-приложения)
 
+#define USE_MQTT 0              // Использовать канал MQTT для управления гирляндой
 #define LED_COUNT 330           // число светодиодов в кольце/ленте
 #define MAX_EFFECT 42           // эффекты от 2 до MAX_EFFECT; 
 #define EEPROM_OK 0xAF          // Флаг, показывающий, что данные в EEPROM были сохранены 
@@ -140,6 +141,7 @@
 // ------------- WiFi & MQTT parameters --------------
 const char *ssid = "SSID\0";                // Имя WiFi cети - "\0" в конце обязателен. Это завершающий символ chat(0)
 const char *pass = "PASS\0";                // Пароль WiFi cети - "\0" в конце обязателен. Это завершающий символ chat(0)
+#if USE_MQTT == 1
 // В этой версии используется публичный MQTT-брокер https://mqtt.by
 // Зарегистрируйтесь на сервере, создайте свой профиль, Логин и Пароль перенесите в настройки ниже
 const char *mqtt_server = "mqtt.by";        // Имя сервера MQTT
@@ -160,6 +162,7 @@ const char *mqtt_pass = "password";         // Пароль от сервера
 #define TOPIC_MODE_LST "user/username/led/mode/lst"   // Топик - отправка уведомления о полном списке режимов
 #define TOPIC_MODE_EDT "user/username/led/mode/edt"   // Топик - отправка параметров режима для их редактирования в Android-программе
 #define TOPIC_MODE_VER "user/username/led/mode/ver"   // Топик - отправка информации о версии прошивки
+#endif
 #endif
 
 #define IP1     192                       // Определение цифр IP адреса, который получит устройство (например 192.168.0.120)
@@ -247,9 +250,12 @@ int userMode = 0;               // режим, использовавшиймя 
 bool powerOn = false;           // состояние ВКЛ/ВЫКЛ после подключения питания
 
 WiFiClient wclient;
-PubSubClient client(wclient);
 AsyncWebServer server(80);      // Web-сервер для управления через браузер
 AsyncWebSocket ws("/ws");       // Web-socket для коммуникации с Web-приложением
+
+#if USE_MQTT == 1
+PubSubClient client(wclient);
+#endif
 
 #define MAX_BUFFER_SIZE 2048
 
@@ -386,10 +392,13 @@ void setup() {
   LEDS.show();
 
   startWiFi();  
+
+  #if USE_MQTT == 1  
   client.setServer(mqtt_server, mqtt_port);
   client.setCallback(callback);
   client.setBufferSize(2048);
-
+  #endif
+  
   // Инициализация файловой системы, в кооторой загружены файлы Web-приложения  
   spiffs_ok = LittleFS.begin();
   if (spiffs_ok) {
@@ -487,6 +496,7 @@ void loop() {
   
   // подключаемся к MQTT серверу
   if (connected) {
+    #if USE_MQTT == 1
     if (!client.connected()) {
       if (!conn_flag) {
         Serial.print(F("Подключаемся к MQTT-серверу..."));
@@ -510,10 +520,12 @@ void loop() {
         }
       }
     }
+    #endif
+    
     ArduinoOTA.handle();
-    if (client.connected()){
-      client.loop();      
-    }
+    #if USE_MQTT == 1
+    if (client.connected())client.loop();      
+    #endif
     ws.cleanupClients();
   }
 
@@ -522,7 +534,7 @@ void loop() {
     
     check_time = millis();
     
-    // Есть ли поступившие по каналу MQTT команды?
+    // Есть ли поступившие по каналу Web/MQTT команды?
     if (queueLength > 0) {
       String command = cmdQueue[queueReadIdx++];
       if (queueReadIdx >= QSIZE) queueReadIdx = 0;
@@ -630,8 +642,10 @@ void loop() {
        Serial.print(F(" секунд"));
     }
 
+    fromWeb = false;
     fromMQTT = false;
     fromConsole = false;
+    fromUDP = false;
     
     Serial.println();
   }

@@ -1,3 +1,4 @@
+#if USE_MQTT == 1
 // ------------------ MQTT CALLBACK -------------------
 void callback(char* topic, byte* payload, unsigned int length) {
   // проверяем из нужного ли нам топика пришли данные
@@ -14,11 +15,14 @@ void callback(char* topic, byte* payload, unsigned int length) {
   }
 }
 // ------------------ MQTT CALLBACK -------------------
+#endif
 
 void NotifyInfo(const String &message) {
   Serial.println(message); 
   String command = String(F("NFO: ")) + message;
+  #if USE_MQTT == 1
   if (client.connected()) client.publish(TOPIC_MODE_NFO, command.c_str());
+  #endif
   sendToAllUDP(command);
   sendToAllWeb(command);
 }
@@ -26,7 +30,9 @@ void NotifyInfo(const String &message) {
 void NotifyError(const String &message) {
   Serial.println(message); 
   String command = String(F("ERR: ")) + message;
+  #if USE_MQTT == 1
   if (client.connected()) client.publish(TOPIC_MODE_ERR, command.c_str());
+  #endif
   sendToAllUDP(command);
   sendToAllWeb(command);
 }
@@ -36,8 +42,9 @@ void NotifyPowerModeChanged() {
   String power_ru = powerOn ? "ВКЛ" : "ВЫКЛ";
   Serial.println(String(F("Статус питания: ")) + power_ru); 
   String command = String(F("PWR:")) + power;
-  if (client.connected()) 
-    client.publish(TOPIC_MODE_PWR, command.c_str());
+  #if USE_MQTT == 1
+  if (client.connected()) client.publish(TOPIC_MODE_PWR, command.c_str());
+  #endif
   sendToAllUDP(command);  
   sendToAllWeb(command);
 }
@@ -45,8 +52,9 @@ void NotifyPowerModeChanged() {
 void NotifyRandomModeChanged() {
   String autoMode = randomModeOn ? "ON" : "OFF";
   String command = String(F("RND:")) + autoMode;
-  if (client.connected()) 
-    client.publish(TOPIC_MODE_RND, command.c_str());
+  #if USE_MQTT == 1
+  if (client.connected()) client.publish(TOPIC_MODE_RND, command.c_str());
+  #endif
   sendToAllUDP(command);
   sendToAllWeb(command);
   if (randomModeOn)
@@ -63,8 +71,9 @@ void NotifyFavorites() {
   data = data.substring(0, data.length() - 1);
   Serial.println(String(F("Выбраны режимы: [")) + data + "]");
   String command = String(F("FAV:")) + data;
-  if (client.connected()) 
-    client.publish(TOPIC_MODE_FAV, command.c_str());
+  #if USE_MQTT == 1
+  if (client.connected()) client.publish(TOPIC_MODE_FAV, command.c_str());
+  #endif
   sendToAllUDP(command);
   sendToAllWeb(command);
 }
@@ -86,35 +95,40 @@ void NotifyOnConnect() {
 
   // Текущее состояние питания
   command = String(F("PWR:")) + power;
-  if (client.connected())     
-    client.publish(TOPIC_MODE_PWR, command.c_str());
+  #if USE_MQTT == 1
+  if (client.connected()) client.publish(TOPIC_MODE_PWR, command.c_str());
+  #endif
   sendToAllUDP(command);
   sendToAllWeb(command);
 
   // Текущая яркость
   command = String(F("BR:")) + String(max_bright);
-  if (client.connected()) 
-    client.publish(TOPIC_MODE_BR, command.c_str()); 
+  #if USE_MQTT == 1
+  if (client.connected()) client.publish(TOPIC_MODE_BR, command.c_str()); 
+  #endif
   sendToAllUDP(command);
   sendToAllWeb(command);
 
   // Текущая настройка цвета пользователя
   command = String(F("RGB:")) + color;
-  if (client.connected())     
-    client.publish(TOPIC_MODE_RGB, command.c_str());
+  #if USE_MQTT == 1
+  if (client.connected()) client.publish(TOPIC_MODE_RGB, command.c_str());
+  #endif
   sendToAllUDP(command);
   sendToAllWeb(command);
 
   // Текущаее состояние автосмены режима
   command = String(F("RND:")) + autoMode;
-  if (client.connected())     
-    client.publish(TOPIC_MODE_RND, command.c_str());
+  #if USE_MQTT == 1
+  if (client.connected()) client.publish(TOPIC_MODE_RND, command.c_str());
+  #endif
   sendToAllUDP(command);
   sendToAllWeb(command);
 
   command = String(F("VER:")) + String(FIRMWARE_VER);
-  if (client.connected()) 
-    client.publish(TOPIC_MODE_VER, command.c_str());
+  #if USE_MQTT == 1
+  if (client.connected()) client.publish(TOPIC_MODE_VER, command.c_str());
+  #endif
   sendToAllUDP(command);
   sendToAllWeb(command);
 
@@ -177,7 +191,9 @@ void NotifyKnownModes() {
     "42[Гирлянда (плавно)]");
 
   String data = String(F("LST:")) + list;
+  #if USE_MQTT == 1
   if (client.connected()) client.publish(TOPIC_MODE_LST, data.c_str());  
+  #endif
   sendToAllUDP(data);
   sendToAllWeb(data);
 
@@ -211,8 +227,10 @@ void NotifyModeChanged(int mode, struct ModeParameter param, const String &topic
     }
     Serial.println(String(F("Режим: ")) + data); 
 
+    #if USE_MQTT == 1
     String sTopic = isEdit ? TOPIC_MODE_EDT : TOPIC_MODE_PM;
     if (client.connected()) client.publish(sTopic.c_str(), data.c_str());
+    #endif
     sendToAllUDP(data);
     sendToAllWeb(data);
 }

@@ -203,9 +203,9 @@ void processCommand(String data) {
   // Запрос версии программы
   if (cmd == "VER") {
       command = String(F("VER:")) + String(FIRMWARE_VER);
-      if (client.connected()) { 
-        client.publish(TOPIC_MODE_VER, command.c_str());
-      }
+      #if USE_MQTT == 1
+      if (client.connected()) client.publish(TOPIC_MODE_VER, command.c_str());
+      #endif
       sendToAllUDP(command);
       sendToAllWeb(command);
   }
@@ -218,9 +218,9 @@ void processCommand(String data) {
     if (cnt == 1) {    
       command = String(F("BR:")) + String(max_bright);
       Serial.println(String(F("Яркость: ")) + String(max_bright));  
-      if (client.connected()) { 
-        client.publish(TOPIC_MODE_BR, command.c_str());
-      }
+      #if USE_MQTT == 1
+      if (client.connected()) client.publish(TOPIC_MODE_BR, command.c_str());
+      #endif
       sendToAllUDP(command);
       sendToAllWeb(command);
     } else 
@@ -242,10 +242,9 @@ void processCommand(String data) {
       }
       command = String(F("BR:")) + String(max_bright);
       // Отправить установленное значение яркости, чтобы клиенты могли его обновить у себя
-      if (client.connected()) {
-        client.publish(TOPIC_MODE_BR, command.c_str());
-      }
-        
+      #if USE_MQTT == 1
+      if (client.connected()) client.publish(TOPIC_MODE_BR, command.c_str());
+      #endif
       sendToAllUDP(command);
       sendToAllWeb(command);
       
@@ -430,8 +429,9 @@ void processCommand(String data) {
       String sColor = String(userColor.r) + ":" + String(userColor.g) + ":" + String(userColor.b);      
       Serial.println(String(F("Задан цвет RGB:")) + sColor); 
       command = String(F("RGB:")) + sColor;
-      if (client.connected()) 
-        client.publish(TOPIC_MODE_RGB, command.c_str());
+      #if USE_MQTT == 1
+      if (client.connected()) client.publish(TOPIC_MODE_RGB, command.c_str());
+      #endif
       sendToAllUDP(command);
       sendToAllWeb(command);
       return;
@@ -464,9 +464,9 @@ void processCommand(String data) {
     // Отправить установленное значение цвета, чтобы клиенты могли его обновить у себя
     String sColor = String(userColor.r) + ":" + String(userColor.g) + ":" + String(userColor.b);      
     command = String(F("RGB:")) + sColor;
-    if (client.connected()) {
-      client.publish(TOPIC_MODE_RGB, command.c_str());
-    }
+    #if USE_MQTT == 1
+    if (client.connected()) client.publish(TOPIC_MODE_RGB, command.c_str());
+    #endif
     sendToAllUDP(command);
     sendToAllWeb(command);
 
@@ -539,8 +539,9 @@ void processCommand(String data) {
       else
         Serial.println(F("Автосмена режимов: выключено"));  
       command = String(F("RND:")) + (randomModeOn ? String(F("ON")) : String(F("OFF")));
-      if (client.connected())
-        client.publish(TOPIC_MODE_RND, command.c_str());
+      #if USE_MQTT == 1
+      if (client.connected()) client.publish(TOPIC_MODE_RND, command.c_str());
+      #endif
       sendToAllUDP(command);
       sendToAllWeb(command);
       return;
