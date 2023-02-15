@@ -1,6 +1,6 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import {BehaviorSubject, debounceTime, Subject, takeUntil} from "rxjs";
-import {WebsocketService} from "../../services/websocket/websocket.service";
+import {BehaviorSubject, debounceTime, Subject, takeUntil} from 'rxjs';
+import {WebsocketService} from '../../services/websocket/websocket.service';
 
 @Component({
   selector: 'app-brightness-slider',
@@ -13,7 +13,7 @@ export class BrightnessSliderComponent implements OnInit, OnDestroy {
   @Input() value: number = -1;
 
   private destroy$ = new Subject();
-  private valueChanged$ = new BehaviorSubject(this.value)
+  private valueChanged$ = new BehaviorSubject(this.value);
 
   public get percent(): number {
     return Math.round(this.value * 100 / 255);
@@ -39,10 +39,8 @@ export class BrightnessSliderComponent implements OnInit, OnDestroy {
   }
 
   valueChanged($event: number | null) {
-    if ($event) {
-      const value = Math.round($event * 255 / 100);
-      this.valueChanged$.next(value);
-    }
+    const value = Math.round(Number($event) * 255 / 100);
+    this.valueChanged$.next(value);
   }
 
   ngOnDestroy() {

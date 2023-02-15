@@ -1,13 +1,13 @@
 import {Component, Inject, OnDestroy, OnInit} from '@angular/core';
-import {ManagementService} from "./services/management/management.service";
-import {MatSlideToggleChange} from "@angular/material/slide-toggle";
-import {DOCUMENT} from "@angular/common";
-import {ActionModel, ActionType, StateModel} from "./models/effect.model";
-import {WebsocketService} from "./services/websocket/websocket.service";
-import {debounceTime, Subject, takeUntil} from "rxjs";
-import {MatDialog, MatDialogRef} from "@angular/material/dialog";
-import {ColorPickerComponent} from "./components/color-picker/color-picker.component";
-import {MatCheckboxChange} from "@angular/material/checkbox";
+import {ManagementService} from './services/management/management.service';
+import {MatSlideToggleChange} from '@angular/material/slide-toggle';
+import {DOCUMENT} from '@angular/common';
+import {ActionModel, ActionType, StateModel} from './models/effect.model';
+import {WebsocketService} from './services/websocket/websocket.service';
+import {debounceTime, Subject, takeUntil} from 'rxjs';
+import {MatDialog, MatDialogRef} from '@angular/material/dialog';
+import {ColorPickerComponent} from './components/color-picker/color-picker.component';
+import {MatCheckboxChange} from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-root',
@@ -24,13 +24,15 @@ export class AppComponent implements OnInit, OnDestroy {
 
   set isDarkTheme(value: boolean) {
     this._darkTheme = value;
-    if (value)
+    if (value) {
       this.document.documentElement.classList.add(AppComponent.DARK_THEME_CLASS);
-    else
+    } else {
       this.document.documentElement.classList.remove(AppComponent.DARK_THEME_CLASS);
+    }
     try {
       window.localStorage[AppComponent.DARK_THEME_CLASS] = value;
-    } catch {
+    }
+    catch {
     }
   }
 
@@ -90,7 +92,7 @@ export class AppComponent implements OnInit, OnDestroy {
       let res = false;
       if (typeof val === 'number') {
         const v = Number(val);
-        return v > min && v <= max;
+        return v >= min && v <= max;
       }
       return res;
     }
@@ -98,13 +100,13 @@ export class AppComponent implements OnInit, OnDestroy {
     this.power = new ActionModel({
       mode: ActionType.POWER,
       onoff: ((value: any) => value ? 'ON' : 'OFF'),
-      set: ((value: any) => value ? 'PWR:OFF' : 'PWR:ON'),
+      set: ((value: any) => value ? 'PWR:OFF' : 'PWR:ON')
     });
     this.bright_5 = new ActionModel({
       mode: ActionType.BRIGHT,
       submode: 'bright_5',
       onoff: ((value: any) => {
-        return checkRange(value, 0, 12) ? 'ON' : 'OFF'
+        return checkRange(value, 0, 13) ? 'ON' : 'OFF';
       }),
       set: 'BR:12'
     });
@@ -112,7 +114,7 @@ export class AppComponent implements OnInit, OnDestroy {
       mode: ActionType.BRIGHT,
       submode: 'bright_25',
       onoff: ((value: any) => {
-        return checkRange(value, 12, 64) ? 'ON' : 'OFF'
+        return checkRange(value, 14, 64) ? 'ON' : 'OFF';
       }),
       set: 'BR:64'
     });
@@ -120,7 +122,7 @@ export class AppComponent implements OnInit, OnDestroy {
       mode: ActionType.BRIGHT,
       submode: 'bright_50',
       onoff: ((value: any) => {
-        return checkRange(value, 64, 128) ? 'ON' : 'OFF'
+        return checkRange(value, 65, 128) ? 'ON' : 'OFF';
       }),
       set: 'BR:128'
     });
@@ -128,7 +130,7 @@ export class AppComponent implements OnInit, OnDestroy {
       mode: ActionType.BRIGHT,
       submode: 'bright_75',
       onoff: ((value: any) => {
-        return checkRange(value, 128, 192) ? 'ON' : 'OFF'
+        return checkRange(value, 129, 192) ? 'ON' : 'OFF';
       }),
       set: 'BR:192'
     });
@@ -136,7 +138,7 @@ export class AppComponent implements OnInit, OnDestroy {
       mode: ActionType.BRIGHT,
       submode: 'bright_100',
       onoff: ((value: any) => {
-        return checkRange(value, 192, 255) ? 'ON' : 'OFF'
+        return checkRange(value, 193, 255) ? 'ON' : 'OFF';
       }),
       set: 'BR:255'
     });
@@ -193,7 +195,7 @@ export class AppComponent implements OnInit, OnDestroy {
       mode: ActionType.COLOR,
       submode: 'color_set',
       set: (value: any) => {
-        this.ShowColorSelector()
+        this.ShowColorSelector();
       }
     });
     this.color_user = new ActionModel({
@@ -224,7 +226,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private ShowColorSelector() {
     this.colorDialogRef = this.dialog.open(ColorPickerComponent, {
       panelClass: 'color-dialog-panel',
-      data: {color: this.state.color}
+      data: { color: this.state.color }
     });
 
     this.colorDialogRef.afterClosed().subscribe((result) => {
